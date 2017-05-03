@@ -9,7 +9,7 @@ Hollows is a touch UI PoC that:
 * supports multitouch
 * doesn't disadvantage left-handed users
 
-It takes the keyboard controls of the 1986 Firebird classic Thrust - and aims to replicate it using only touch controls.
+It takes the keyboard controls of the 1986 Firebird classic `Thrust` and replicates them using only touch controls.
 
 The original offers five keyboard commands:
 
@@ -36,10 +36,10 @@ Sadly the amazing Rob Hubbard title music is missing altogether.
 
 Acknowledgements
 ----------------
-ImpulseEngine 2D library [github.com/RandyGaul/ImpulseEngine/](https://github.com/RandyGaul/ImpulseEngine/)) by @randypgaul.
+ImpulseEngine 2D library [github.com/RandyGaul/ImpulseEngine](https://github.com/RandyGaul/ImpulseEngine/) by @randypgaul.
 
-Java port [github.com/ClickerMonkey/ImpulseEngine/](https://github.com/ClickerMonkey/ImpulseEngine/) by Philip Diffenderfer.
+Java port [github.com/ClickerMonkey/ImpulseEngine](https://github.com/ClickerMonkey/ImpulseEngine/) by Philip Diffenderfer.
 
-Loops created in Smasher: [smasher.sourceforge.net/](http://smasher.sourceforge.net).
+Loops created in Smasher: [smasher.sourceforge.net](http://smasher.sourceforge.net).
 
-Original sample "Synth loop" by LS: [www.freesound.org/](samplesViewSingle.php?id=66381).
+Original sample "Synth loop" by LS: [www.freesound.org](samplesViewSingle.php?id=66381).
