@@ -17,11 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import magnos.impulse.Body;
-import magnos.impulse.Circle;
-import magnos.impulse.ImpulseMath;
-import magnos.impulse.ImpulseScene;
-import magnos.impulse.Vec2;
+import org.magnos.impulse.Body;
+import org.magnos.impulse.Circle;
+import org.magnos.impulse.ImpulseMath;
+import org.magnos.impulse.ImpulseScene;
+import org.magnos.impulse.Vec2;
 
 /**
  * Panel initializes the physics model for player and map
