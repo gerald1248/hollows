@@ -1,13 +1,13 @@
 Hollows
 =======
 
-![Screenshot](screenshots/screenshot.png?raw=true "Screenshot")
+<img src="screenshots/screenshot.png" height="400" alt=    "Hollows screenshot"/>
 
 Hollows is a touch UI PoC that:
 
 * doesn't use buttons
 * supports multitouch
-* doesn't disadvantage left-handed users
+* considers left-handed users
 
 It takes the keyboard controls of the 1986 Firebird classic `Thrust` and replicates them using only touch controls.
 
@@ -32,11 +32,11 @@ While it is possible to use the interface without multitouch, it is much easier 
 
 ![Touch controls](plantuml/ui.png?raw=true "Touch controls")
 
-Sadly the amazing Rob Hubbard title music is missing altogether.
+Sadly there is no Rob Hubbard title music.
 
 Acknowledgements
 ----------------
-ImpulseEngine 2D library [github.com/RandyGaul/ImpulseEngine](https://github.com/RandyGaul/ImpulseEngine/) by @randypgaul.
+ImpulseEngine 2D library [github.com/RandyGaul/ImpulseEngine](https://github.com/RandyGaul/ImpulseEngine/)) by @randypgaul.
 
 Java port [github.com/ClickerMonkey/ImpulseEngine](https://github.com/ClickerMonkey/ImpulseEngine/) by Philip Diffenderfer.
 

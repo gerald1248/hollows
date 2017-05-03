@@ -7,12 +7,12 @@ import android.graphics.RectF;
 
 import java.util.LinkedList;
 
-import magnos.impulse.Body;
-import magnos.impulse.Circle;
-import magnos.impulse.Polygon;
-import magnos.impulse.Shape;
-import magnos.impulse.Vec2;
-import magnos.impulse.ImpulseScene;
+import org.magnos.impulse.Body;
+import org.magnos.impulse.Circle;
+import org.magnos.impulse.Polygon;
+import org.magnos.impulse.Shape;
+import org.magnos.impulse.Vec2;
+import org.magnos.impulse.ImpulseScene;
 
 /**
  * LevelMap manages the static shapes/bodies that make up a level

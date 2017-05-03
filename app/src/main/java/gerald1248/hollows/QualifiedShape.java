@@ -1,6 +1,6 @@
 package gerald1248.hollows;
 
-import magnos.impulse.Shape;
+import org.magnos.impulse.Shape;
 
 /**
  * Qualified shapes carry all information required to
