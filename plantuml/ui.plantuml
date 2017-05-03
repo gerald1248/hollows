@@ -1,0 +1,20 @@
+@startuml
+
+(*) --> "Screen press" as DOWN
+if "" then
+-down->[move left/right] "Rotate left/right" as MOVE
+else
+-down->[long press] "Accelerate" as THRUST
+else
+-down->[short press] "Fire" as FIRE
+
+MOVE -->[pause movement] THRUST
+THRUST -->[move left/right] MOVE
+
+MOVE --> "Screen press ends" as UP
+THRUST --> UP
+FIRE --> UP
+
+UP --> (*)
+
+@enduml
