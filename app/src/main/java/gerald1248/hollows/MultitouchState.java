@@ -11,6 +11,5 @@ public class MultitouchState extends Object {
 
     public Motion state;
     public float x1, x2;
-    //public int framesDelayRemaining = Constants.FRAMES_DELAY;
     public int ticks = 0;
 }
