@@ -9,7 +9,7 @@ Hollows is a touch UI PoC that:
 * supports multitouch
 * considers left-handed users
 
-It takes the keyboard controls of the 1986 Firebird classic `Thrust` and replicates them using only touch controls.
+It recreates the keyboard controls of the 1986 Firebird classic Thrust using only touch interactions.
 
 The original offers five keyboard commands:
 
