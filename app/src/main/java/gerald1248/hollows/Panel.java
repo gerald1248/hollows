@@ -34,7 +34,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private Rect r = new Rect();
 
     private Player player;
-    private Point playerPoint;
     private LevelMap levelMap;
 
     public ImpulseScene impulse;
@@ -54,35 +53,37 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         thread = new MainThread(getHolder(), this);
 
-        //canvas player
-        player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
-        playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
-        player.update(playerPoint);
-
-
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
         // stub test data - just a few simple shapes for now
-        levelMap = new LevelMap();
-        levelMap.addCircle(150.0f, 5000, 5300);
-        levelMap.addCircle(125.0f, 5500, 5450);
-        levelMap.addCircle(100.0f, 6000, 5600);
-        levelMap.addCircle(75.0f, 6500, 5750);
-        levelMap.addRect(1000.0f, 50.0f, 4000, 5500, (float)(Math.PI * 0.2));
-        levelMap.addRect(1000.0f, 50.0f, 7000, 6000, (float)(-Math.PI * 0.25));
-        levelMap.addRect(1000.0f, 50.0f, 5000, 6500, 0.0f);
+        int mid = (int)Constants.MAX_MAP/2;
+        levelMap = new LevelMap(context);
+        levelMap.addCircle(150.0f, mid, mid + 300);
+        levelMap.addCircle(125.0f, mid + 500, mid + 450);
+        levelMap.addCircle(100.0f, mid + 1000, mid + 600);
+        levelMap.addCircle(75.0f, mid + 1500, mid + 750);
+
         levelMap.initStaticShapes(impulse);
 
+        initPlayer(); //canvas
+        initBody(); //impulse
 
-        //impulse player
+        setFocusable(true);
+    }
+
+    public void initPlayer() {
+        player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
+        Point playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
+        player.update(playerPoint);
+    }
+
+    public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         body.setOrient(0.0f);
         body.restitution = 0.2f;
         body.dynamicFriction = 0.2f;
         body.staticFriction = 0.4f;
-
-        setFocusable(true);
     }
 
     public void setRunning(boolean b) {
@@ -93,6 +94,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void reset() {
+        player.explode(false);
+        initPlayer();
+        initBody();
     }
 
     // tick() is called from main loop when ready to draw frame
@@ -107,12 +111,22 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             multitouchMap.put(key, value);
 
             if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
+                // visual indicator if thrust not already applied
+                if (value.state != MultitouchState.Motion.Thrust) {
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float)Math.PI, (float)Math.PI / 8, 4);
+                    waves.add(w);
+
+                    if (waves.size() > Constants.MAX_WAVES) {
+                        waves.remove();
+                    }
+                }
+
                 // apply thrust
                 value.state = MultitouchState.Motion.Thrust;
                 multitouchMap.put(key, value);
 
                 float orient = body.orient;
-                float mult = 1250000.0F;
+                float mult = 1500000.0F;
                 float c = (float)Math.cos(orient + Math.PI/2);
                 float s = (float)Math.sin(orient + Math.PI/2);
                 Vec2 v = new Vec2(mult * -c, mult * -s);
@@ -123,6 +137,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         // force fixed orient
         body.setOrient(player.orient);
+
+        //handle game over
+        if (player.exploded()) {
+            reset();
+        }
     }
 
     @Override
@@ -215,7 +234,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient, (float)Math.PI / 4);
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient, (float)Math.PI / 4, 100);
                     waves.add(w);
 
                     if (waves.size() > Constants.MAX_WAVES) {
@@ -252,7 +271,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         body.position.x = v.x;
         body.position.y = v.y;
 
-        //collision logic goes here
+        //check for collisions
+        if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
+            body.setStatic();
+            player.explode(true);
+        }
     }
 
     @Override

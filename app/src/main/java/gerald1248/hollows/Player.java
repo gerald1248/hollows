@@ -17,32 +17,32 @@ public class Player implements GameObject {
 
     private Rect r;
     private int color;
+    private float scale;
+    private boolean explode;
 
     public Player(Rect rectangle, float orient, int color) {
         this.r = rectangle;
         this.orient = orient;
         this.color = color;
-        this.orient = 0.0F;
+        this.orient = 0.0f;
+        this.scale = 1.0f;
+        this.explode = false;
     }
 
     public void move(MotionEvent event, float delta) {
 
         if (delta < 0) {
-            this.orient -= Math.PI/50; // -= 0.1
+            this.orient -= Math.PI/40; // was 50
         } else if (delta > 0) {
-            this.orient += Math.PI/50; // -= 0.1
-        } else {
-            // do nothing: move events don't become hold events
-            // but the user may want to continue moving
+            this.orient += Math.PI/40; // was 50
         }
     }
 
     @Override
     public void draw(Canvas canvas) {
         Paint paint = new Paint();
-        paint.setStrokeWidth(2.0F);
+        paint.setStrokeWidth(2.0f);
         paint.setColor(color);
-        //paint.setStyle(Paint.Style.STROKE);
 
         float paddingX = ((float) r.width()) / 10.0f;
         float paddingY = ((float) r.height()) / 10.0f;
@@ -61,6 +61,11 @@ public class Player implements GameObject {
 
         canvas.save();
         canvas.rotate(this.orient * 180 / (float) Math.PI, r.centerX(), r.centerY()); // rad2deg
+
+        if (explode) {
+            this.scale *= 1.5f;
+            canvas.scale(this.scale, this.scale, r.centerX(), r.centerY());
+        }
         canvas.drawPath(path, paint);
         canvas.restore();
     }
@@ -71,5 +76,17 @@ public class Player implements GameObject {
 
     public void update(Point point) {
         r.set(point.x - r.width() / 2, point.y - r.height() / 2, point.x + r.width() / 2, point.y + r.height() / 2);
+    }
+
+    public void explode(boolean b) {
+        explode = b;
+
+        if (!b) {
+            scale = 1.0f;
+        }
+    }
+
+    public boolean exploded() {
+        return (scale > 20.0f);
     }
 }
