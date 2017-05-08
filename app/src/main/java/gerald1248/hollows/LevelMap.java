@@ -185,7 +185,7 @@ public class LevelMap {
 
         char c = charMap[row][col];
 
-        //debug
+        //debug collisions
         if (c != '.') {
             System.out.printf("[x=%.2f y=%.2f r=%.2f] row=%d col=%d charMap has: %c\n", cx, cy, r, row, col, charMap[row][col]);
         }
