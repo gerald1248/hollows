@@ -13,6 +13,7 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,6 +22,7 @@ import org.magnos.impulse.Body;
 import org.magnos.impulse.Circle;
 import org.magnos.impulse.ImpulseMath;
 import org.magnos.impulse.ImpulseScene;
+import org.magnos.impulse.Shape;
 import org.magnos.impulse.Vec2;
 
 /**
@@ -40,6 +42,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public Body body;
 
     private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
+    private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
 
@@ -57,6 +60,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
         // stub test data - just a few simple shapes for now
+        // TODO: generate 2D bodies from levelMap
         int mid = (int)Constants.MAX_MAP/2;
         levelMap = new LevelMap(context);
         levelMap.addCircle(150.0f, mid, mid + 300);
@@ -116,7 +120,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     Wave w = new Wave(body.position.x, body.position.y, player.orient - (float)Math.PI, (float)Math.PI / 8, 4);
                     waves.add(w);
 
-                    if (waves.size() > Constants.MAX_WAVES) {
+                    if (waves.size() > Constants.MAX_PROJECTILES) {
                         waves.remove();
                     }
                 }
@@ -234,11 +238,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient, (float)Math.PI / 4, 100);
-                    waves.add(w);
+                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
+                    lasers.add(l);
 
-                    if (waves.size() > Constants.MAX_WAVES) {
-                        waves.remove();
+                    if (lasers.size() > Constants.MAX_PROJECTILES) {
+                        lasers.remove();
                     }
                 }
 
@@ -276,6 +280,29 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             body.setStatic();
             player.explode(true);
         }
+
+        //check if laser has hit a static object; if it has, laser disappears
+        //also check if it's hit a 2D body
+
+        //iterate over lasers
+        Iterator<Laser> laserIt = lasers.iterator();
+
+        while (laserIt.hasNext()) {
+            // level map
+            Laser l = laserIt.next();
+
+            float x = l.x;
+            float y = l.y;
+            float r = l.r;
+            if (levelMap.collisionDetected(x, y, r)) {
+                laserIt.remove();
+            }
+
+            // 2D bodies
+            if (levelMap.shapeCollisionDetected(x, y, r)) {
+                laserIt.remove();
+            };
+        }
     }
 
     @Override
@@ -298,6 +325,16 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 it.remove();
             } else {
                 w.draw(canvas);
+            }
+        }
+
+        Iterator<Laser> laserIt = lasers.iterator();
+        while (laserIt.hasNext()) {
+            Laser l = laserIt.next();
+            if (l.done()) {
+                laserIt.remove();
+            } else {
+                l.draw(canvas);
             }
         }
     }

@@ -193,4 +193,29 @@ public class LevelMap {
 
         return (c != '.');
     }
+
+    public boolean shapeCollisionDetected(float cx, float cy, float r) {
+        for (int i = 0; i < shapes.size(); i++) {
+            QualifiedShape qs = shapes.get(i);
+            Shape s = qs.shape;
+            if (s instanceof Circle) {
+                float r2 = s.radius;
+                float x2 = qs.x;
+                float y2 = qs.y;
+
+                float d = (float)Math.hypot((double)x2 - (double)cx, (double)y2 - (double)cy);
+
+                if (i == 0) {
+                    System.out.printf("DIST: %.2f - COMP: %.2f - x1=%.2f x2=%.2f y1=%.2f y2=%.2f\n", d, r + r2, cx, x2, cy, y2);
+                }
+                //if (d < r + r2) {
+                if (d < 500.0f) {
+                    //delete for now - pyrotechnics coming up later
+                    shapes.remove(i);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
