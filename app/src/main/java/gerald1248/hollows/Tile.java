@@ -79,7 +79,7 @@ public class Tile {
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
-            case '\'':
+            case '´':
                 p.moveTo(left, top);
                 p.lineTo(right, top);
                 p.lineTo(left, bottom);
