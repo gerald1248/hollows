@@ -1,9 +1,13 @@
 package gerald1248.hollows;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
+import android.graphics.Rect;
 
 import java.util.LinkedList;
 
@@ -14,18 +18,84 @@ import org.magnos.impulse.Shape;
 import org.magnos.impulse.Vec2;
 import org.magnos.impulse.ImpulseScene;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Bitmap.createBitmap;
+
 /**
  * LevelMap manages the static shapes/bodies that make up a level
  */
 
 public class LevelMap {
-    // TODO: git-friendly JSON maps
-    // TODO: dedicated canvas - map drawn once, then scaled on pivot point
-
     LinkedList<QualifiedShape> shapes = new LinkedList<QualifiedShape>();
     LinkedList<Body> staticBodies = new LinkedList<Body>();
+    private char[][] charMap = new char[50][50];
 
-    public LevelMap() {
+    private Canvas offscreenCanvas = null;
+    private Bitmap offscreenBitmap = null;
+
+    private Context context;
+
+    public LevelMap(Context context) {
+        this.context = context;
+        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
+        offscreenCanvas = new Canvas(offscreenBitmap);
+
+        //initialize charMap: '.' represents a blank tile
+        for (int i = 0; i < 50; i++) {
+            for (int j = 0; j < 50; j++) {
+                charMap[i][j] = '.';
+            }
+        }
+
+    }
+
+    public void drawOffscreen() {
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        if (Constants.DRAW_GRID) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(2.0f);
+            for (int i = 100; i < 2500; i += 100) {
+                offscreenCanvas.drawCircle(Constants.MAX_MAP / 2, Constants.MAX_MAP / 2, (float) i, paint);
+            }
+        }
+
+        // draw circles here, rects/polygons in draw()
+        paint.setStyle(Paint.Style.FILL);
+        int len = shapes.size();
+        for (int i = 0; i < len; i++) {
+            QualifiedShape qs = shapes.get(i);
+            Shape s = qs.shape;
+            if (s instanceof Circle) {
+                Circle c = (Circle) s;
+                float r = c.radius;
+                float x = qs.x;
+                float y = qs.y;
+                offscreenCanvas.drawCircle(x, y, r, paint);
+            }
+        }
+
+        Resources resources = context.getResources();
+        String[] levels = resources.getStringArray(R.array.levels);
+
+        int row = 0, col = 0;
+        String level = levels[0].trim();
+        len = level.length();
+        for (int i = 0; i < len; i++) {
+            char c = level.charAt(i);
+            if (Character.isWhitespace(c)) {
+                row++;
+                col = 0;
+                continue;
+            } else {
+                Tile tile = new Tile(c, row, col);
+                tile.draw(offscreenCanvas, paint);
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = c;
+                }
+            }
+            col++;
+        }
     }
 
     public LinkedList<QualifiedShape> getShapes() {
@@ -52,31 +122,9 @@ public class LevelMap {
         canvas.save();
         canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
 
-        if (Constants.DRAW_GRID) {
-            paint.setStyle(Paint.Style.STROKE);
-            // draw grid
-            for (float f = 0.0F; f < 10000.0F; f += 1000.0F) {
-                Path xAxis = new Path();
-                xAxis.moveTo(0.0F, f);
-                xAxis.lineTo(10000.0F, f);
-                xAxis.close();
-                canvas.drawPath(xAxis, paint);
-            }
-
-            for (float f = 0.0F; f < 10000.0F; f += 1000.0F) {
-                Path yAxis = new Path();
-                yAxis.moveTo(f, 0.0F);
-                yAxis.lineTo(f, 10000.0F);
-                yAxis.close();
-                canvas.drawPath(yAxis, paint);
-            }
-
-            for (float r = 500.0F; r < 5000.0F; r += 500.0F) {
-                RectF rect = new RectF(5000.0F - r, 5000.0F - r, 5000.0F + r, 5000.0F + r);
-                canvas.drawArc(rect, 0.0F, 360.0F, false, paint);
-            }
-            paint.setStyle(Paint.Style.FILL);
-        }
+        // copy from offscreen canvas
+        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+        canvas.drawBitmap(offscreenBitmap, null, r, null);
 
         int len = shapes.size();
         for (int i = 0; i < len; i++) {
@@ -97,19 +145,18 @@ public class LevelMap {
                     }
                 }
                 path.close();
-                canvas.drawPath(path, paint);
-            } else if (s instanceof Circle) {
-                Circle c = (Circle) s;
-                float r = c.radius;
-                float x = qs.x;
-                float y = qs.y;
-                canvas.drawCircle(x, y, r, paint);
+                offscreenCanvas.drawPath(path, paint);
             }
         }
+
         canvas.restore();
     }
 
     public void initStaticShapes(ImpulseScene impulse) {
+        // draw offscreen
+        drawOffscreen();
+
+        // now create corresponding physics objects
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape s = shapes.get(i);
             Body b = impulse.add(s.shape, s.x, s.y);
@@ -120,5 +167,30 @@ public class LevelMap {
             b.setStatic();
             staticBodies.add(b);
         }
+    }
+
+    public boolean collisionDetected(float cx, float cy, float r) {
+        //consider rectangle
+        float left = cx - r;
+        float top = cy - r;
+        float right = cx + r;
+        float bottom = cy + r;
+
+        int row = (int)Math.round(cy / Constants.TILE_LENGTH);
+        int col = (int)Math.round(cx / Constants.TILE_LENGTH);
+
+        if (row < 0 || row >= 50 || col < 0 || col >= 50) {
+            return false;
+        }
+
+        char c = charMap[row][col];
+
+        //debug
+        if (c != '.') {
+            System.out.printf("[x=%.2f y=%.2f r=%.2f] row=%d col=%d charMap has: %c\n", cx, cy, r, row, col, charMap[row][col]);
+        }
+        //end debug
+
+        return (c != '.');
     }
 }

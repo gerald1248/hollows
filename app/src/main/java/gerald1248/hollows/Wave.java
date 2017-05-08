@@ -16,33 +16,34 @@ public class Wave extends Object {
 
     // all angles in radians until passed to API
     public float orient; //rad
-    public float sweep = 2.0F * (float)Math.PI; //rad
-
-    private float r;
+    public float sweep = 2.0f * (float)Math.PI; //rad
 
     // fixed params
-    private int steps = 100;
+    private int steps, stepsRemaining;
+    private float r = 0.0f;
     private float dr = Constants.PLAYER_RADIUS;
 
-    public Wave(float cx, float cy, float orient, float sweep) {
+    public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
         this.cy = cy;
         this.orient = orient - (float)Math.PI/2; //12 o'clock
         this.sweep = sweep;
+        this.steps = steps;
+        this.stepsRemaining = steps;
     }
     public void draw(Canvas canvas) {
         canvas.save();
         canvas.translate(-cx + Constants.SCREEN_WIDTH/2, -cy + Constants.SCREEN_HEIGHT/2);
 
-        steps--;
-        if (steps <= 0) {
+        stepsRemaining--;
+        if (stepsRemaining <= 0) {
             return;
         }
         r += dr;
         Paint paint = new Paint();
-        paint.setStrokeWidth(2.0F);
+        paint.setStrokeWidth(2.0f);
         paint.setColor(Color.WHITE);
-        int alpha = (steps * 5) % 255;
+        int alpha = ((int)Math.round(stepsRemaining * 100/steps) * 5) % 255;
         paint.setAlpha(alpha); // opaque then tail off quickly
         paint.setStyle(Paint.Style.STROKE);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
@@ -50,6 +51,6 @@ public class Wave extends Object {
         canvas.restore();
     }
     public boolean done() {
-        return (steps <= 0);
+        return (stepsRemaining <= 0);
     }
 }
