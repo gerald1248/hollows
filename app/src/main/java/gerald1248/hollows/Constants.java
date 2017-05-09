@@ -14,8 +14,7 @@ public class Constants {
     public static int MAX_PROJECTILES = 4;
     public static float PLAYER_RADIUS = 50.0f;
     public static float MAX_MAP = 5000.0f;
-    public static float BORDER_MAP = 1000.0f;
     public static float TILE_LENGTH = 100.0f;
     public static boolean DRAW_GRID = false;
-    public static boolean PLAY_AUDIO = true;
+    public static boolean PLAY_AUDIO = false;
 }

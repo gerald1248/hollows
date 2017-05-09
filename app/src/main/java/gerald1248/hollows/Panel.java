@@ -13,7 +13,6 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -22,7 +21,6 @@ import org.magnos.impulse.Body;
 import org.magnos.impulse.Circle;
 import org.magnos.impulse.ImpulseMath;
 import org.magnos.impulse.ImpulseScene;
-import org.magnos.impulse.Shape;
 import org.magnos.impulse.Vec2;
 
 /**
@@ -61,12 +59,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         // stub test data - just a few simple shapes for now
         // TODO: generate 2D bodies from levelMap
-        int mid = (int)Constants.MAX_MAP/2;
         levelMap = new LevelMap(context);
-        levelMap.addCircle(150.0f, mid, mid + 300);
-        levelMap.addCircle(125.0f, mid + 500, mid + 450);
-        levelMap.addCircle(100.0f, mid + 1000, mid + 600);
-        levelMap.addCircle(75.0f, mid + 1500, mid + 750);
+
+        //keep for now
+        //int mid = (int)Constants.MAX_MAP/2;
+        //levelMap.addCircle(150.0f, mid, mid + 300);
 
         levelMap.initStaticShapes(impulse);
 
@@ -117,7 +114,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
                 // visual indicator if thrust not already applied
                 if (value.state != MultitouchState.Motion.Thrust) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float)Math.PI, (float)Math.PI / 8, 4);
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 4);
                     waves.add(w);
 
                     if (waves.size() > Constants.MAX_PROJECTILES) {
@@ -131,8 +128,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
                 float orient = body.orient;
                 float mult = 1500000.0F;
-                float c = (float)Math.cos(orient + Math.PI/2);
-                float s = (float)Math.sin(orient + Math.PI/2);
+                float c = (float) Math.cos(orient + Math.PI / 2);
+                float s = (float) Math.sin(orient + Math.PI / 2);
                 Vec2 v = new Vec2(mult * -c, mult * -s);
                 body.applyForce(v);
             }
@@ -257,23 +254,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update() {
-        // keep world circular for now, but leave border
         Vec2 v = body.position;
-        float sideWithBorder = Constants.MAX_MAP + Constants.BORDER_MAP;
 
-        if (v.x < -Constants.BORDER_MAP) {
-            v.x = sideWithBorder;
-        } else if (v.x > sideWithBorder) {
-            v.x = -Constants.BORDER_MAP;
+        if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
+            //TODO: reverse momentum
         }
-        if (v.y < -Constants.BORDER_MAP) {
-            v.y = sideWithBorder;
-        } else if (v.y > sideWithBorder) {
-            v.y = -Constants.BORDER_MAP;
-        }
-
-        body.position.x = v.x;
-        body.position.y = v.y;
 
         //check for collisions
         if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
@@ -299,9 +284,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             // 2D bodies
-            if (levelMap.shapeCollisionDetected(x, y, r)) {
-                laserIt.remove();
-            };
+            QualifiedShape qs = levelMap.shapeCollisionDetected(x, y, r);
+            if (qs != null) {
+                //laserIt.remove();
+                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 40);
+                wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
+                waves.add(wave);
+            }
+            ;
         }
     }
 

@@ -6,7 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 
 import java.util.LinkedList;
@@ -35,10 +36,13 @@ public class LevelMap {
 
     private Context context;
 
+    private Point startPoint;
+
     public LevelMap(Context context) {
         this.context = context;
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
+        startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
 
         //initialize charMap: '.' represents a blank tile
         for (int i = 0; i < 50; i++) {
@@ -46,7 +50,6 @@ public class LevelMap {
                 charMap[i][j] = '.';
             }
         }
-
     }
 
     public void drawOffscreen() {
@@ -60,10 +63,41 @@ public class LevelMap {
             }
         }
 
-        // draw circles here, rects/polygons in draw()
-        paint.setStyle(Paint.Style.FILL);
-        int len = shapes.size();
+        Resources resources = context.getResources();
+        String[] levels = resources.getStringArray(R.array.levels);
+
+        int row = 0, col = 0;
+        String level = levels[0].trim();
+        int len = level.length();
         for (int i = 0; i < len; i++) {
+            char c = level.charAt(i);
+            if (Character.isWhitespace(c)) {
+                row++;
+                col = 0;
+                continue;
+            } else if (Character.isDigit(c)) {
+                int d = Character.getNumericValue(c);
+                addCircle(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = c;
+                }
+            } else if (c == 'c') {
+                startPoint = new Point(row * (int) Constants.TILE_LENGTH, col * (int) Constants.TILE_LENGTH);
+                // no need to update charMap - '.' is fine
+                // TODO: use startPoint
+            } else {
+                Tile tile = new Tile(c, row, col);
+                tile.draw(offscreenCanvas, paint);
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = c;
+                }
+            }
+            col++;
+        }
+
+        paint.setStyle(Paint.Style.FILL);
+        int shapesLen = shapes.size();
+        for (int i = 0; i < shapesLen; i++) {
             QualifiedShape qs = shapes.get(i);
             Shape s = qs.shape;
             if (s instanceof Circle) {
@@ -73,28 +107,6 @@ public class LevelMap {
                 float y = qs.y;
                 offscreenCanvas.drawCircle(x, y, r, paint);
             }
-        }
-
-        Resources resources = context.getResources();
-        String[] levels = resources.getStringArray(R.array.levels);
-
-        int row = 0, col = 0;
-        String level = levels[0].trim();
-        len = level.length();
-        for (int i = 0; i < len; i++) {
-            char c = level.charAt(i);
-            if (Character.isWhitespace(c)) {
-                row++;
-                col = 0;
-                continue;
-            } else {
-                Tile tile = new Tile(c, row, col);
-                tile.draw(offscreenCanvas, paint);
-                if (row < 50 && col < 50) {
-                    charMap[row][col] = c;
-                }
-            }
-            col++;
         }
     }
 
@@ -126,37 +138,14 @@ public class LevelMap {
         Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
         canvas.drawBitmap(offscreenBitmap, null, r, null);
 
-        int len = shapes.size();
-        for (int i = 0; i < len; i++) {
-            QualifiedShape qs = shapes.get(i);
-            Shape s = qs.shape;
-            if (s instanceof Polygon) {
-                Polygon p = (Polygon) s;
-                int vertexCount = p.vertexCount;
-                Path path = new Path();
-                for (int j = 0; j < vertexCount; j++) {
-                    Vec2 v = new Vec2(p.vertices[j]);
-                    p.u.muli(v);
-                    v.addi(new Vec2((float) qs.x, (float) qs.y));
-                    if (j == 0) {
-                        path.moveTo(v.x, v.y);
-                    } else {
-                        path.lineTo(v.x, v.y);
-                    }
-                }
-                path.close();
-                offscreenCanvas.drawPath(path, paint);
-            }
-        }
-
         canvas.restore();
     }
 
     public void initStaticShapes(ImpulseScene impulse) {
-        // draw offscreen
         drawOffscreen();
 
         // now create corresponding physics objects
+        System.out.printf("creating 2D objects for %d shapes\n", shapes.size());
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape s = shapes.get(i);
             Body b = impulse.add(s.shape, s.x, s.y);
@@ -165,7 +154,8 @@ public class LevelMap {
             b.dynamicFriction = 0.2f;
             b.staticFriction = 0.4f;
             b.setStatic();
-            staticBodies.add(b);
+            staticBodies.add(b); //not used yet
+            System.out.printf("2D obj at %d %d\n", s.x, s.y);
         }
     }
 
@@ -176,8 +166,8 @@ public class LevelMap {
         float right = cx + r;
         float bottom = cy + r;
 
-        int row = (int)Math.round(cy / Constants.TILE_LENGTH);
-        int col = (int)Math.round(cx / Constants.TILE_LENGTH);
+        int row = (int) Math.round(cy / Constants.TILE_LENGTH);
+        int col = (int) Math.round(cx / Constants.TILE_LENGTH);
 
         if (row < 0 || row >= 50 || col < 0 || col >= 50) {
             return false;
@@ -194,7 +184,7 @@ public class LevelMap {
         return (c != '.');
     }
 
-    public boolean shapeCollisionDetected(float cx, float cy, float r) {
+    public QualifiedShape shapeCollisionDetected(float cx, float cy, float r) {
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape qs = shapes.get(i);
             Shape s = qs.shape;
@@ -203,19 +193,18 @@ public class LevelMap {
                 float x2 = qs.x;
                 float y2 = qs.y;
 
-                float d = (float)Math.hypot((double)x2 - (double)cx, (double)y2 - (double)cy);
+                float d = (float) Math.hypot((double) x2 - (double) cx, (double) y2 - (double) cy);
 
-                if (i == 0) {
-                    System.out.printf("DIST: %.2f - COMP: %.2f - x1=%.2f x2=%.2f y1=%.2f y2=%.2f\n", d, r + r2, cx, x2, cy, y2);
-                }
-                //if (d < r + r2) {
-                if (d < 500.0f) {
-                    //delete for now - pyrotechnics coming up later
-                    shapes.remove(i);
-                    return true;
+                if (d < r + r2) {
+                    //shape is part of offline canvas, so keep it and animate main canvas
+                    return qs;
                 }
             }
         }
-        return false;
+        return null;
+    }
+
+    public Point getStartPoint() {
+        return startPoint;
     }
 }
