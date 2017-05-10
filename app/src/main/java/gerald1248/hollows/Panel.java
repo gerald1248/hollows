@@ -31,7 +31,7 @@ import org.magnos.impulse.Vec2;
 
 public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private MainThread thread;
-    private Rect r = new Rect();
+    //private Rect r = new Rect();
 
     private Player player;
     private LevelMap levelMap;
@@ -50,6 +50,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private int detonateFramesRemaining = 0;
     private int targetsRemaining = 100;
 
+    private Point endPoint = null;
+
     public Panel(Context context) throws IOException {
         super(context);
 
@@ -62,6 +64,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         levelMap = new LevelMap(context);
         levelMap.initStaticShapes(impulse);
+
+        endPoint = levelMap.getEndPoint();
 
         initPlayer(); //canvas
         initBody(); //impulse
@@ -145,6 +149,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         //handle game over
         if (player.exploded()) {
+            reset();
+        } else if (player.escaped()) {
+            //TODO: advance to next level
+            targetsRemaining = 100;
             reset();
         }
     }
@@ -261,8 +269,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
-            player.explode(true);
-            detonate();
+
+            if (targetsRemaining > 0) {
+                player.explode(true);
+                detonate();
+            } else {
+                player.escape(true);
+                detonate();
+            }
         }
 
         //check for collisions
@@ -299,6 +313,18 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 detonate();
             }
         }
+
+        if (targetsRemaining > 0) {
+            //finally, check if near endPoint
+            float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
+            float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+            if (d < 3.0f * Constants.PLAYER_RADIUS) {
+                targetsRemaining--;
+            }
+            if (targetsRemaining == 99 || (targetsRemaining % 10) == 0) {
+                //TODO: play bell sound
+            }
+        }
     }
 
     @Override
@@ -315,9 +341,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
-
-        // display targets remaining
-        updateInfo(canvas);
 
         starfield.draw(canvas);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
@@ -342,35 +365,29 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 l.draw(canvas);
             }
         }
+
+        // display targets remaining
+        updateInfo(canvas);
     }
 
     void updateInfo(Canvas canvas) {
         canvas.save();
-        String s = String.format("%d", targetsRemaining);
-        Paint p = new Paint();
-        p.setColor(Color.WHITE);
-        drawTextNE(canvas, p, s);
+        String s = String.format("%03d", targetsRemaining);
+
+        int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
+        drawText(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 64.0f, 48.0f, color);
         canvas.restore();
     }
 
-    private void drawTextNE(Canvas canvas, Paint paint, String text) {
-        paint.setTextAlign(Paint.Align.RIGHT);
-        canvas.getClipBounds(r);
-        int cWidth = r.width();
-        paint.getTextBounds(text, 0, text.length(), r);
-        float x = cWidth - r.width();
-        float y = 0.0f;
-        canvas.drawText(text, x, y, paint);
-    }
-
-    private void drawTextCenter(Canvas canvas, Paint paint, String text) {
-        paint.setTextAlign(Paint.Align.LEFT);
-        canvas.getClipBounds(r);
-        int cHeight = r.height();
-        int cWidth = r.width();
-        paint.getTextBounds(text, 0, text.length(), r);
-        float x = cWidth / 2f - r.width() / 2f - r.left;
-        float y = cHeight / 2f + r.height() / 2f - r.bottom;
-        canvas.drawText(text, x, y, paint);
+    private void drawText(Canvas canvas, String text, float size, float x, float y, int color) {
+        canvas.save();
+        Paint p = new Paint();
+        Rect r = new Rect();
+        p.setColor(color);
+        p.setTextAlign(Paint.Align.RIGHT);
+        p.setTextSize(size);
+        p.getTextBounds(text, 0, text.length(), r);
+        canvas.drawText(text, x, y, p);
+        canvas.restore();
     }
 }

@@ -10,6 +10,7 @@ public class Constants {
     public static int DT_FACTOR = 4; // slo-mo=2 regular=4 fast=8
     public static int FRAMES_DELAY = 3;
     public static int FRAMES_DETONATE = 10;
+    public static int FRAMES_ESCAPE = 10;
     public static int MAX_FPS = 30;
     public static int MAX_POINTER = 5;
     public static int MAX_PROJECTILES = 4;

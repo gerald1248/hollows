@@ -11,7 +11,8 @@ import java.io.IOException;
 
 public class MainActivity extends Activity {
 
-    private MediaPlayer mediaPlayer = null;
+    //private MediaPlayer mediaPlayer = null;
+    private LoopMediaPlayer loopMediaPlayer = null;
     private Panel panel = null;
 
     @Override
@@ -30,16 +31,22 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         setContentView(panel);
-        mediaPlayer = getMediaPlayer();
+        //mediaPlayer = getMediaPlayer();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         panel.setRunning(true);
+
+        /*
         mediaPlayer.setLooping(true);
         if (Constants.PLAY_AUDIO) {
             mediaPlayer.start();
+        }
+        */
+        if (Constants.PLAY_AUDIO) {
+            loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, randomAudioResource());
         }
     }
 
@@ -47,14 +54,18 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         panel.setRunning(false);
-        mediaPlayer.stop();
+        //mediaPlayer.stop();
+        if (Constants.PLAY_AUDIO) {
+            loopMediaPlayer.stop();
+            loopMediaPlayer.release();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mediaPlayer.release();
-        mediaPlayer = null;
+        //mediaPlayer.release();
+        //mediaPlayer = null;
     }
 
     private int randomAudioResource() {

@@ -34,13 +34,14 @@ public class Laser implements Projectile {
         this.stepsRemaining = steps;
     }
     public void draw(Canvas canvas) {
-        canvas.save();
-        canvas.translate(-cx + Constants.SCREEN_WIDTH/2, -cy + Constants.SCREEN_HEIGHT/2);
-
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
         }
+
+        canvas.save();
+        canvas.translate(-cx + Constants.SCREEN_WIDTH/2, -cy + Constants.SCREEN_HEIGHT/2);
+
         d += dd;
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
