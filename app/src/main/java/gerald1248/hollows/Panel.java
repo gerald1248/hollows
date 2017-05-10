@@ -31,7 +31,7 @@ import org.magnos.impulse.Vec2;
 
 public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private MainThread thread;
-    private Rect r = new Rect();
+    //private Rect r = new Rect();
 
     private Player player;
     private LevelMap levelMap;
@@ -316,9 +316,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
-        // display targets remaining
-        updateInfo(canvas);
-
         starfield.draw(canvas);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         player.draw(canvas);
@@ -342,36 +339,28 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 l.draw(canvas);
             }
         }
+
+        // display targets remaining
+        updateInfo(canvas);
     }
 
     void updateInfo(Canvas canvas) {
         canvas.save();
-        String s = String.format("%d", targetsRemaining);
+        String s = String.format("%03d", targetsRemaining);
 
-        Paint p = new Paint();
-        p.setColor(Color.WHITE);
-        drawTextNE(canvas, p, s);
+        drawTextNE(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 100.0f, 48.0f);
         canvas.restore();
     }
 
-    private void drawTextNE(Canvas canvas, Paint paint, String text) {
-        paint.setTextAlign(Paint.Align.RIGHT);
-        canvas.getClipBounds(r);
-        int cWidth = r.width();
-        paint.getTextBounds(text, 0, text.length(), r);
-        float x = cWidth - r.width();
-        float y = 0.0f;
-        canvas.drawText(text, x, y, paint);
-    }
-
-    private void drawTextCenter(Canvas canvas, Paint paint, String text) {
-        paint.setTextAlign(Paint.Align.LEFT);
-        canvas.getClipBounds(r);
-        int cHeight = r.height();
-        int cWidth = r.width();
-        paint.getTextBounds(text, 0, text.length(), r);
-        float x = cWidth / 2f - r.width() / 2f - r.left;
-        float y = cHeight / 2f + r.height() / 2f - r.bottom;
-        canvas.drawText(text, x, y, paint);
+    private void drawTextNE(Canvas canvas, String text, float size, float x, float y) {
+        canvas.save();
+        Paint p = new Paint();
+        Rect r = new Rect();
+        p.setColor(Color.WHITE);
+        p.setTextAlign(Paint.Align.RIGHT);
+        p.setTextSize(size);
+        p.getTextBounds(text, 0, text.length(), r);
+        canvas.drawText(text, x, y, p);
+        canvas.restore();
     }
 }

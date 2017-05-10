@@ -40,14 +40,14 @@ public class Wave implements Projectile {
     };
 
     public void draw(Canvas canvas) {
-        canvas.save();
-
-        canvas.translate(-cx + -xOffset + Constants.SCREEN_WIDTH/2, -cy - yOffset + Constants.SCREEN_HEIGHT/2);
-
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
         }
+
+        canvas.save();
+        canvas.translate(-cx + -xOffset + Constants.SCREEN_WIDTH/2, -cy - yOffset + Constants.SCREEN_HEIGHT/2);
+
         r += dr;
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
