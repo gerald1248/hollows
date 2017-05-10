@@ -18,7 +18,7 @@ public class Player implements GameObject {
     private Rect r;
     private int color;
     private float scale;
-    private boolean explode;
+    private boolean explode, escape;
 
     public Player(Rect rectangle, float orient, int color) {
         this.r = rectangle;
@@ -65,6 +65,9 @@ public class Player implements GameObject {
         if (explode) {
             this.scale *= 1.5f;
             canvas.scale(this.scale, this.scale, r.centerX(), r.centerY());
+        } else if (escape) {
+            this.scale /= 1.5f;
+            canvas.scale(this.scale, this.scale, r.centerX(), r.centerY());
         }
         canvas.drawPath(path, paint);
         canvas.restore();
@@ -86,7 +89,17 @@ public class Player implements GameObject {
         }
     }
 
+    public void escape(boolean b) {
+        escape = b;
+
+        if (!escape) {
+            scale = 1.0f;
+        }
+    }
+
     public boolean exploded() {
         return (scale > 20.0f);
     }
+
+    public boolean escaped() { return (scale < 0.05f); }
 }

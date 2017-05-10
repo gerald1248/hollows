@@ -165,6 +165,8 @@ public class LevelMap {
     }
 
     public boolean collisionDetected(float cx, float cy, float r) {
+        //TODO: add collision rules for each shape
+
         //consider rectangle
         float left = cx - r;
         float top = cy - r;
@@ -179,14 +181,6 @@ public class LevelMap {
         }
 
         char c = charMap[row][col];
-
-        /*
-        //debug collisions
-        if (c != '.') {
-            System.out.printf("[x=%.2f y=%.2f r=%.2f] row=%d col=%d charMap has: %c\n", cx, cy, r, row, col, charMap[row][col]);
-        }
-        //end debug
-        */
 
         return (c != '.');
     }
@@ -211,7 +205,7 @@ public class LevelMap {
         return null;
     }
 
-    public Point getStartPoint() {
-        return startPoint;
+    public Point getEndPoint() {
+        return endPoint;
     }
 }
