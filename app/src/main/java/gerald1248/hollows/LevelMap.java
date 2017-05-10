@@ -35,13 +35,14 @@ public class LevelMap {
 
     private Context context;
 
-    private Point startPoint;
+    private Point startPoint, endPoint;
 
     public LevelMap(Context context) {
         this.context = context;
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
+        endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
 
         //initialize charMap: '.' represents a blank tile
         for (int i = 0; i < 50; i++) {
@@ -80,11 +81,18 @@ public class LevelMap {
                 if (row < 50 && col < 50) {
                     charMap[row][col] = c;
                 }
-            } else if (c == 'c') {
+            } else if (c == 's') {
                 startPoint = new Point(row * (int) Constants.TILE_LENGTH, col * (int) Constants.TILE_LENGTH);
                 // no need to update charMap - '.' is fine
                 // TODO: use startPoint
-            } else {
+            } else if (c == 'e') {
+                endPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
+                addCircle(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = c;
+                }
+            }
+            else {
                 Tile tile = new Tile(c, row, col);
                 tile.draw(offscreenCanvas, paint);
                 if (row < 50 && col < 50) {
@@ -144,7 +152,6 @@ public class LevelMap {
         drawOffscreen();
 
         // now create corresponding physics objects
-        System.out.printf("creating 2D objects for %d shapes\n", shapes.size());
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape s = shapes.get(i);
             Body b = impulse.add(s.shape, s.x, s.y);
@@ -154,7 +161,6 @@ public class LevelMap {
             b.staticFriction = 0.4f;
             b.setStatic();
             staticBodies.add(b); //not used yet
-            System.out.printf("2D obj at %d %d\n", s.x, s.y);
         }
     }
 
@@ -174,11 +180,13 @@ public class LevelMap {
 
         char c = charMap[row][col];
 
+        /*
         //debug collisions
         if (c != '.') {
             System.out.printf("[x=%.2f y=%.2f r=%.2f] row=%d col=%d charMap has: %c\n", cx, cy, r, row, col, charMap[row][col]);
         }
         //end debug
+        */
 
         return (c != '.');
     }

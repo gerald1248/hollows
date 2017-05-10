@@ -48,6 +48,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private MultitouchState mts = new MultitouchState();
 
     private int detonateFramesRemaining = 0;
+    private int targetsRemaining = 100;
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -315,6 +316,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
+        // display targets remaining
+        updateInfo(canvas);
+
         starfield.draw(canvas);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         player.draw(canvas);
@@ -340,7 +344,26 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private void drawCenterText(Canvas canvas, Paint paint, String text) {
+    void updateInfo(Canvas canvas) {
+        canvas.save();
+        String s = String.format("%d", targetsRemaining);
+        Paint p = new Paint();
+        p.setColor(Color.WHITE);
+        drawTextNE(canvas, p, s);
+        canvas.restore();
+    }
+
+    private void drawTextNE(Canvas canvas, Paint paint, String text) {
+        paint.setTextAlign(Paint.Align.RIGHT);
+        canvas.getClipBounds(r);
+        int cWidth = r.width();
+        paint.getTextBounds(text, 0, text.length(), r);
+        float x = cWidth - r.width();
+        float y = 0.0f;
+        canvas.drawText(text, x, y, paint);
+    }
+
+    private void drawTextCenter(Canvas canvas, Paint paint, String text) {
         paint.setTextAlign(Paint.Align.LEFT);
         canvas.getClipBounds(r);
         int cHeight = r.height();
