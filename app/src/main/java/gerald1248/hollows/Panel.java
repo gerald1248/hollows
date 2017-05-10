@@ -347,6 +347,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     void updateInfo(Canvas canvas) {
         canvas.save();
         String s = String.format("%d", targetsRemaining);
+
         Paint p = new Paint();
         p.setColor(Color.WHITE);
         drawTextNE(canvas, p, s);
