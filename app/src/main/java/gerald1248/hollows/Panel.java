@@ -40,11 +40,15 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public Body body;
 
     private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
+    private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
 
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
+
+    private int detonateFramesRemaining = 0;
+    private int targetsRemaining = 100;
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -56,14 +60,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
-        // stub test data - just a few simple shapes for now
-        int mid = (int)Constants.MAX_MAP/2;
         levelMap = new LevelMap(context);
-        levelMap.addCircle(150.0f, mid, mid + 300);
-        levelMap.addCircle(125.0f, mid + 500, mid + 450);
-        levelMap.addCircle(100.0f, mid + 1000, mid + 600);
-        levelMap.addCircle(75.0f, mid + 1500, mid + 750);
-
         levelMap.initStaticShapes(impulse);
 
         initPlayer(); //canvas
@@ -81,9 +78,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         body.setOrient(0.0f);
-        body.restitution = 0.2f;
-        body.dynamicFriction = 0.2f;
-        body.staticFriction = 0.4f;
+        initBodyPhysics(body);
+    }
+
+    public void initBodyPhysics(Body b) {
+        b.restitution = 0.2f;
+        b.dynamicFriction = 0.2f;
+        b.staticFriction = 0.4f;
     }
 
     public void setRunning(boolean b) {
@@ -97,6 +98,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         player.explode(false);
         initPlayer();
         initBody();
+    }
+
+    public void detonate() {
+        detonateFramesRemaining = Constants.FRAMES_DETONATE;
     }
 
     // tick() is called from main loop when ready to draw frame
@@ -113,10 +118,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
                 // visual indicator if thrust not already applied
                 if (value.state != MultitouchState.Motion.Thrust) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float)Math.PI, (float)Math.PI / 8, 4);
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 4);
                     waves.add(w);
 
-                    if (waves.size() > Constants.MAX_WAVES) {
+                    if (waves.size() > Constants.MAX_PROJECTILES) {
                         waves.remove();
                     }
                 }
@@ -127,8 +132,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
                 float orient = body.orient;
                 float mult = 1500000.0F;
-                float c = (float)Math.cos(orient + Math.PI/2);
-                float s = (float)Math.sin(orient + Math.PI/2);
+                float c = (float) Math.cos(orient + Math.PI / 2);
+                float s = (float) Math.sin(orient + Math.PI / 2);
                 Vec2 v = new Vec2(mult * -c, mult * -s);
                 body.applyForce(v);
             }
@@ -234,11 +239,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient, (float)Math.PI / 4, 100);
-                    waves.add(w);
+                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
+                    lasers.add(l);
 
-                    if (waves.size() > Constants.MAX_WAVES) {
-                        waves.remove();
+                    if (lasers.size() > Constants.MAX_PROJECTILES) {
+                        lasers.remove();
                     }
                 }
 
@@ -253,28 +258,46 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update() {
-        // keep world circular for now, but leave border
         Vec2 v = body.position;
-        float sideWithBorder = Constants.MAX_MAP + Constants.BORDER_MAP;
 
-        if (v.x < -Constants.BORDER_MAP) {
-            v.x = sideWithBorder;
-        } else if (v.x > sideWithBorder) {
-            v.x = -Constants.BORDER_MAP;
+        if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
+            player.explode(true);
+            detonate();
         }
-        if (v.y < -Constants.BORDER_MAP) {
-            v.y = sideWithBorder;
-        } else if (v.y > sideWithBorder) {
-            v.y = -Constants.BORDER_MAP;
-        }
-
-        body.position.x = v.x;
-        body.position.y = v.y;
 
         //check for collisions
         if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
             body.setStatic();
             player.explode(true);
+            detonate();
+        }
+
+        //check if laser has hit a static object; if it has, laser disappears
+        //also check if it's hit a 2D body
+
+        //iterate over lasers
+        Iterator<Laser> laserIt = lasers.iterator();
+
+        while (laserIt.hasNext()) {
+            // level map
+            Laser l = laserIt.next();
+
+            float x = l.x;
+            float y = l.y;
+            float r = l.r;
+            if (levelMap.collisionDetected(x, y, r)) {
+                laserIt.remove();
+            }
+
+            // 2D bodies
+            QualifiedShape qs = levelMap.shapeCollisionDetected(x, y, r);
+            if (qs != null) {
+                laserIt.remove();
+                Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
+                wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
+                waves.add(wave);
+                detonate();
+            }
         }
     }
 
@@ -285,7 +308,16 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         }
         super.draw(canvas);
 
-        canvas.drawColor(Color.BLACK);
+        int bgComponent = 0;
+        if (detonateFramesRemaining > 0) {
+            bgComponent = Math.round(128 / Constants.FRAMES_DETONATE) * detonateFramesRemaining;
+            detonateFramesRemaining--;
+        }
+
+        canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
+
+        // display targets remaining
+        updateInfo(canvas);
 
         starfield.draw(canvas);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
@@ -300,9 +332,38 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 w.draw(canvas);
             }
         }
+
+        Iterator<Laser> laserIt = lasers.iterator();
+        while (laserIt.hasNext()) {
+            Laser l = laserIt.next();
+            if (l.done()) {
+                laserIt.remove();
+            } else {
+                l.draw(canvas);
+            }
+        }
     }
 
-    private void drawCenterText(Canvas canvas, Paint paint, String text) {
+    void updateInfo(Canvas canvas) {
+        canvas.save();
+        String s = String.format("%d", targetsRemaining);
+        Paint p = new Paint();
+        p.setColor(Color.WHITE);
+        drawTextNE(canvas, p, s);
+        canvas.restore();
+    }
+
+    private void drawTextNE(Canvas canvas, Paint paint, String text) {
+        paint.setTextAlign(Paint.Align.RIGHT);
+        canvas.getClipBounds(r);
+        int cWidth = r.width();
+        paint.getTextBounds(text, 0, text.length(), r);
+        float x = cWidth - r.width();
+        float y = 0.0f;
+        canvas.drawText(text, x, y, paint);
+    }
+
+    private void drawTextCenter(Canvas canvas, Paint paint, String text) {
         paint.setTextAlign(Paint.Align.LEFT);
         canvas.getClipBounds(r);
         int cHeight = r.height();

@@ -74,29 +74,37 @@ public class Tile {
                 break;
             case '`':
                 p.moveTo(left, top);
+                p.lineTo(left + mid, top - elev);
                 p.lineTo(right, top);
+                p.lineTo(right + elev, top + mid);
                 p.lineTo(right, bottom);
+                p.lineTo(left + side/2 + sign * elev, top + side/2);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
             case '´':
                 p.moveTo(left, top);
+                p.lineTo(left + mid, top - elev);
                 p.lineTo(right, top);
+                p.lineTo(left + side/2, top + side/2 + sign * elev);
                 p.lineTo(left, bottom);
+                p.lineTo(left - elev, top + side/2);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
             case '^':
                 p.moveTo(left, bottom);
-                p.lineTo(left + side/2, top);
+                p.lineTo(left + side/2 + sign * elev, top + sign * elev);
                 p.lineTo(right, bottom);
+                p.lineTo(left + side/2, bottom + elev);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
             case 'v':
                 p.moveTo(left, top);
+                p.lineTo(left + side/2, top - elev);
                 p.lineTo(right, top);
-                p.lineTo(left + side/2, bottom);
+                p.lineTo(left + side/2 + sign * elev, bottom + sign * elev);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;

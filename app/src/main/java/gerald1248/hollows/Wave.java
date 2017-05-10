@@ -10,7 +10,7 @@ import android.graphics.RectF;
  * The panel maintains a linked list of these
  */
 
-public class Wave extends Object {
+public class Wave implements Projectile {
     public float cx;
     public float cy;
 
@@ -22,6 +22,8 @@ public class Wave extends Object {
     private int steps, stepsRemaining;
     private float r = 0.0f;
     private float dr = Constants.PLAYER_RADIUS;
+    private float xOffset = 0.0f;
+    private float yOffset = 0.0f;
 
     public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
@@ -31,9 +33,16 @@ public class Wave extends Object {
         this.steps = steps;
         this.stepsRemaining = steps;
     }
+
+    public void setOffset(float x, float y) {
+        xOffset = x;
+        yOffset = y;
+    };
+
     public void draw(Canvas canvas) {
         canvas.save();
-        canvas.translate(-cx + Constants.SCREEN_WIDTH/2, -cy + Constants.SCREEN_HEIGHT/2);
+
+        canvas.translate(-cx + -xOffset + Constants.SCREEN_WIDTH/2, -cy - yOffset + Constants.SCREEN_HEIGHT/2);
 
         stepsRemaining--;
         if (stepsRemaining <= 0) {

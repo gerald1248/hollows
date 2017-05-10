@@ -4,11 +4,11 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 
-import magnos.impulse.Circle;
-import magnos.impulse.ImpulseMath;
-import magnos.impulse.Polygon;
-import magnos.impulse.Shape;
-import magnos.impulse.Vec2;
+import org.magnos.impulse.Circle;
+import org.magnos.impulse.ImpulseMath;
+import org.magnos.impulse.Polygon;
+import org.magnos.impulse.Shape;
+import org.magnos.impulse.Vec2;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -20,7 +20,7 @@ public class LevelMapTest {
 
     @Test
     public void addRect_Successful() throws Exception {
-        LevelMap map = new LevelMap();
+        LevelMap map = new LevelMap(null);
         float w = 100.0f;
         float h = 50.0f;
 
@@ -38,7 +38,7 @@ public class LevelMapTest {
 
     @Test
     public void addPolygon_Successful() throws Exception {
-        LevelMap map = new LevelMap();
+        LevelMap map = new LevelMap(null);
         int len = Polygon.MAX_POLY_VERTEX_COUNT;
 
         Vec2[] v = Vec2.arrayOf(len);
@@ -58,7 +58,7 @@ public class LevelMapTest {
 
     @Test
     public void addCircle_Successful() throws Exception {
-        LevelMap map = new LevelMap();
+        LevelMap map = new LevelMap(null);
         float r = 30.0f;
         map.addCircle(r, x, y);
 
