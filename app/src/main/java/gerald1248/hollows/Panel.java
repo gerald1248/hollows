@@ -47,6 +47,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
 
+    private int detonateFramesRemaining = 0;
+
     public Panel(Context context) throws IOException {
         super(context);
 
@@ -57,14 +59,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
-        // stub test data - just a few simple shapes for now
-        // TODO: generate 2D bodies from levelMap
         levelMap = new LevelMap(context);
-
-        //keep for now
-        //int mid = (int)Constants.MAX_MAP/2;
-        //levelMap.addCircle(150.0f, mid, mid + 300);
-
         levelMap.initStaticShapes(impulse);
 
         initPlayer(); //canvas
@@ -82,9 +77,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         body.setOrient(0.0f);
-        body.restitution = 0.2f;
-        body.dynamicFriction = 0.2f;
-        body.staticFriction = 0.4f;
+        initBodyPhysics(body);
+    }
+
+    public void initBodyPhysics(Body b) {
+        b.restitution = 0.2f;
+        b.dynamicFriction = 0.2f;
+        b.staticFriction = 0.4f;
     }
 
     public void setRunning(boolean b) {
@@ -98,6 +97,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         player.explode(false);
         initPlayer();
         initBody();
+    }
+
+    public void detonate() {
+        detonateFramesRemaining = Constants.FRAMES_DETONATE;
     }
 
     // tick() is called from main loop when ready to draw frame
@@ -257,13 +260,15 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
-            //TODO: reverse momentum
+            player.explode(true);
+            detonate();
         }
 
         //check for collisions
         if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
             body.setStatic();
             player.explode(true);
+            detonate();
         }
 
         //check if laser has hit a static object; if it has, laser disappears
@@ -286,12 +291,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             // 2D bodies
             QualifiedShape qs = levelMap.shapeCollisionDetected(x, y, r);
             if (qs != null) {
-                //laserIt.remove();
-                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 40);
+                laserIt.remove();
+                Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
                 wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
                 waves.add(wave);
+                detonate();
             }
-            ;
         }
     }
 
@@ -302,7 +307,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         }
         super.draw(canvas);
 
-        canvas.drawColor(Color.BLACK);
+        int bgComponent = 0;
+        if (detonateFramesRemaining > 0) {
+            bgComponent = Math.round(128 / Constants.FRAMES_DETONATE) * detonateFramesRemaining;
+            detonateFramesRemaining--;
+        }
+
+        canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
         starfield.draw(canvas);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
