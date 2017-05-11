@@ -14,6 +14,7 @@ public class PackageNameTest {
     @Test
     public void useAppContext() throws Exception {
         Context appContext = InstrumentationRegistry.getTargetContext();
+
         assertEquals("gerald1248.hollows", appContext.getPackageName());
     }
 }
