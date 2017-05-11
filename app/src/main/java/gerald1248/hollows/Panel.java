@@ -29,9 +29,8 @@ import org.magnos.impulse.Vec2;
  * MotionEvents are handled here, as is the state of each touch interaction
  */
 
-public class Panel extends SurfaceView implements SurfaceHolder.Callback {
+public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameObject {
     private MainThread thread;
-    //private Rect r = new Rect();
 
     private Player player;
     private LevelMap levelMap;
@@ -50,6 +49,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private int detonateFramesRemaining = 0;
     private int targetsRemaining = 100;
 
+    private Point startPoint = null;
     private Point endPoint = null;
 
     public Panel(Context context) throws IOException {
@@ -65,6 +65,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         levelMap = new LevelMap(context);
         levelMap.initStaticShapes(impulse);
 
+        startPoint = levelMap.getStartPoint();
         endPoint = levelMap.getEndPoint();
 
         initPlayer(); //canvas
@@ -75,7 +76,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void initPlayer() {
         player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
+
         Point playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
+
+        //System.out.printf("startPoint: x=%.2f y=%.2f", startPoint.x, startPoint.y);
+        //Point playerPoint = startPoint;
         player.update(playerPoint);
     }
 
@@ -278,6 +283,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 detonate();
             }
         }
+
+        //adjust body weight if necessary
+        System.out.printf("weight=%.2f", body.mass);
 
         //check for collisions
         if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {

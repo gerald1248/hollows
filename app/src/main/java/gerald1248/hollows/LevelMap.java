@@ -79,10 +79,10 @@ public class LevelMap {
                 int d = Character.getNumericValue(c);
                 addCircle(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
                 if (row < 50 && col < 50) {
-                    charMap[row][col] = c;
+                    charMap[row][col] = '.';
                 }
             } else if (c == 's') {
-                startPoint = new Point(row * (int) Constants.TILE_LENGTH, col * (int) Constants.TILE_LENGTH);
+                startPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
                 // no need to update charMap - '.' is fine
                 // TODO: use startPoint
             } else if (c == 'e') {
@@ -208,4 +208,5 @@ public class LevelMap {
     public Point getEndPoint() {
         return endPoint;
     }
+    public Point getStartPoint() { return startPoint; }
 }
