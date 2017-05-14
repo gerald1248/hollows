@@ -1,6 +1,7 @@
 package gerald1248.hollows;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -25,13 +26,17 @@ public class MainActivity extends Activity {
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         Constants.SCREEN_WIDTH = dm.widthPixels;
         Constants.SCREEN_HEIGHT = dm.heightPixels;
+
+        //level count
+        Resources resources = MainActivity.this.getResources();
+        Constants.MAX_LEVEL = resources.getStringArray(R.array.levels).length;
+
         try {
             panel = new Panel(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
         setContentView(panel);
-        //mediaPlayer = getMediaPlayer();
     }
 
     @Override
@@ -39,12 +44,6 @@ public class MainActivity extends Activity {
         super.onResume();
         panel.setRunning(true);
 
-        /*
-        mediaPlayer.setLooping(true);
-        if (Constants.PLAY_AUDIO) {
-            mediaPlayer.start();
-        }
-        */
         if (Constants.PLAY_AUDIO) {
             loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, randomAudioResource());
         }
@@ -54,7 +53,6 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         panel.setRunning(false);
-        //mediaPlayer.stop();
         if (Constants.PLAY_AUDIO) {
             loopMediaPlayer.stop();
             loopMediaPlayer.release();
@@ -64,8 +62,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //mediaPlayer.release();
-        //mediaPlayer = null;
     }
 
     private int randomAudioResource() {

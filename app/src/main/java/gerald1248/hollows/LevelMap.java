@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 
 import java.util.LinkedList;
@@ -37,19 +38,32 @@ public class LevelMap {
 
     private Point startPoint, endPoint;
 
+    private int levelIndex = 0;
+
     public LevelMap(Context context) {
         this.context = context;
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+        clearLevelMap();
+    }
 
+    private void clearLevelMap() {
         //initialize charMap: '.' represents a blank tile
         for (int i = 0; i < 50; i++) {
             for (int j = 0; j < 50; j++) {
                 charMap[i][j] = '.';
             }
         }
+    }
+
+    public void setLevelIndex(int levelIndex) {
+        this.levelIndex = levelIndex;
+        shapes.clear();
+        staticBodies.clear();
+        clearLevelMap();
+        offscreenCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
 
     public void drawOffscreen() {
@@ -65,9 +79,11 @@ public class LevelMap {
 
         Resources resources = context.getResources();
         String[] levels = resources.getStringArray(R.array.levels);
-
+        if (levelIndex >= levels.length) {
+            levelIndex = 0;
+        }
         int row = 0, col = 0;
-        String level = levels[0].trim();
+        String level = levels[levelIndex].trim();
         int len = level.length();
         for (int i = 0; i < len; i++) {
             char c = level.charAt(i);
