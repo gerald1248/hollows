@@ -47,10 +47,15 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private MultitouchState mts = new MultitouchState();
 
     private int detonateFramesRemaining = 0;
-    private int targetsRemaining = 100;
+    private int initialTargetsRemaining = 100;
+    private int targetsRemaining = initialTargetsRemaining;
 
-    private Point startPoint = null;
+    private int levelIndex = 0;
+
+    private Point startPoint = null; // not yet used
     private Point endPoint = null;
+
+    private float initialBodyMass = 0.0f;
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -77,10 +82,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     public void initPlayer() {
         player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
 
+        //screen position never changes
         Point playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
-
-        //System.out.printf("startPoint: x=%.2f y=%.2f", startPoint.x, startPoint.y);
-        //Point playerPoint = startPoint;
         player.update(playerPoint);
     }
 
@@ -88,6 +91,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         body.setOrient(0.0f);
         initBodyPhysics(body);
+        initialBodyMass = body.mass;
+
+        //actual position matches start point
+        body.position.x = startPoint.x;
+        body.position.y = startPoint.y;
     }
 
     public void initBodyPhysics(Body b) {
@@ -103,8 +111,22 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
     }
 
-    public void reset() {
+    public void reset(boolean advance) {
+
+        if (advance) {
+            //which level next?
+            levelIndex++;
+            if (levelIndex >= Constants.MAX_LEVEL) {
+                //TODO: success animation
+                levelIndex = 0;
+            }
+        }
         player.explode(false);
+        player.escape(false);
+        levelMap.setLevelIndex(levelIndex);
+        levelMap.initStaticShapes(impulse);
+        startPoint = levelMap.getStartPoint();
+        endPoint = levelMap.getEndPoint();
         initPlayer();
         initBody();
     }
@@ -154,11 +176,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         //handle game over
         if (player.exploded()) {
-            reset();
+            targetsRemaining = initialTargetsRemaining;
+            reset(false);
         } else if (player.escaped()) {
             //TODO: advance to next level
-            targetsRemaining = 100;
-            reset();
+            targetsRemaining = initialTargetsRemaining;
+            reset(true);
         }
     }
 
@@ -277,6 +300,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
             if (targetsRemaining > 0) {
                 player.explode(true);
+                targetsRemaining = initialTargetsRemaining;
                 detonate();
             } else {
                 player.escape(true);
@@ -284,13 +308,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             }
         }
 
-        //adjust body weight if necessary
-        System.out.printf("weight=%.2f", body.mass);
-
         //check for collisions
         if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
             body.setStatic();
             player.explode(true);
+            targetsRemaining = 100;
             detonate();
         }
 
@@ -328,9 +350,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
             if (d < 3.0f * Constants.PLAYER_RADIUS) {
                 targetsRemaining--;
+                body.mass = body.mass * 1.05f;
             }
             if (targetsRemaining == 99 || (targetsRemaining % 10) == 0) {
-                //TODO: play bell sound
+                //TODO: play bell sound?
             }
         }
     }
@@ -380,19 +403,25 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     void updateInfo(Canvas canvas) {
         canvas.save();
-        String s = String.format("%03d", targetsRemaining);
 
+        String s = String.format("%03d", targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        drawText(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 64.0f, 48.0f, color);
+        drawText(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
+        canvas.restore();
+
+        s = String.format("Level %03d", levelIndex + 1);
+        color = Color.GRAY;
+        drawText(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
+
         canvas.restore();
     }
 
-    private void drawText(Canvas canvas, String text, float size, float x, float y, int color) {
+    private void drawText(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color) {
         canvas.save();
         Paint p = new Paint();
         Rect r = new Rect();
         p.setColor(color);
-        p.setTextAlign(Paint.Align.RIGHT);
+        p.setTextAlign(align);
         p.setTextSize(size);
         p.getTextBounds(text, 0, text.length(), r);
         canvas.drawText(text, x, y, p);

@@ -7,6 +7,7 @@ package gerald1248.hollows;
 public class Constants {
     public static int SCREEN_WIDTH;
     public static int SCREEN_HEIGHT;
+    public static int MAX_LEVEL;
     public static int DT_FACTOR = 4; // slo-mo=2 regular=4 fast=8
     public static int FRAMES_DELAY = 3;
     public static int FRAMES_DETONATE = 10;

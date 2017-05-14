@@ -37,7 +37,7 @@ public class LevelsTest {
     }
 
     public void requiredTiles(String level) {
-        boolean b = level.contains("e");
+        boolean b = level.contains("e") && level.contains("s");
         assertThat(b, is(true));
     }
 
