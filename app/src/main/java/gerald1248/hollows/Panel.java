@@ -89,7 +89,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
-        body.setOrient(0.0f);
+        body.setOrient((float)-Math.PI/2); //PI
         initBodyPhysics(body);
         initialBodyMass = body.mass;
 
