@@ -37,6 +37,9 @@ public class LevelMap {
 
     private Point startPoint, endPoint;
 
+    private Vec2[] collisionVertices = null;
+    private int vertexCount = 4;
+
     private int levelIndex = 0;
 
     public LevelMap(Context context) {
@@ -46,6 +49,11 @@ public class LevelMap {
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
         clearLevelMap();
+
+        collisionVertices = new Vec2[vertexCount];
+        for (int i = 0; i < vertexCount; i++) {
+            collisionVertices[i] = new Vec2(0.0f, 0.0f);
+        }
     }
 
     private void clearLevelMap() {
@@ -182,29 +190,55 @@ public class LevelMap {
         }
     }
 
-    public boolean collisionDetected(float cx, float cy, float r) {
-        //TODO: add collision rules for each shape
+    public boolean detectCollision(float cx, float cy, float r, float orient) {
+        //center
+        collisionVertices[0].x = cx;
+        collisionVertices[0].y = cy;
 
-        //consider rectangle
-        float left = cx - r;
-        float top = cy - r;
-        float right = cx + r;
-        float bottom = cy + r;
+        //tip
+        collisionVertices[1].x = cx + r * (float)Math.cos(orient);
+        collisionVertices[1].y = cy + r * (float)Math.sin(orient);
 
-        int row = (int) Math.round(cy / Constants.TILE_LENGTH);
-        int col = (int) Math.round(cx / Constants.TILE_LENGTH);
+        //bottom right corner
+        collisionVertices[2].x = cx + r * (float)Math.cos(orient + Math.PI * 0.75);
+        collisionVertices[2].y = cy + r * (float)Math.sin(orient + Math.PI * 0.75);
 
-        if (row < 0 || row >= 50 || col < 0 || col >= 50) {
-            return false;
+        //bottom left corner
+        collisionVertices[3].x = cx + r * (float)Math.cos(orient + Math.PI * 1.25);
+        collisionVertices[3].y = cy + r * (float)Math.sin(orient + Math.PI * 1.25);
+
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+
+        for (int i = 0; i < vertexCount; i++) {
+            float x = collisionVertices[i].x;
+            float y = collisionVertices[i].y;
+            System.out.printf("[%d] orient=%.2f x=%.2f y=%.2f\n", i, orient, x, y);
+
+            offscreenCanvas.drawCircle(x, y, 2.0f, paint);
+
+            int row = Math.round(y / Constants.TILE_LENGTH);
+            int col = Math.round(x / Constants.TILE_LENGTH);
+
+            if (row < 0 || row >= 50 || col < 0 || col >= 50) {
+                continue;
+            }
+
+            char type = charMap[row][col];
+            if (type == '.') {
+                continue;
+            }
+
+            if (Tile.detectCollision(type, x % Constants.TILE_LENGTH, y % Constants.TILE_LENGTH)) {
+                System.out.printf("collision type=%c row=%d col=%d x=%.2f y=%.2f\n", type, row, col, x % Constants.TILE_LENGTH, y % Constants.TILE_LENGTH);
+                return true;
+            }
         }
-
-        char c = charMap[row][col];
-
-        return (c != '.');
+        return false;
     }
 
     //TODO: move collision logic to Orb objects
-    public QualifiedShape shapeCollisionDetected(float cx, float cy, float r) {
+    public QualifiedShape detectShapeCollision(float cx, float cy, float r) {
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape qs = shapes.get(i);
             Shape s = qs.shape;

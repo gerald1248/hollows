@@ -309,7 +309,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         //check for collisions
-        if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
+        if (levelMap.detectCollision(v.x, v.y, Constants.PLAYER_RADIUS, player.orient)) {
             body.setStatic();
             player.explode(true);
             targetsRemaining = 100;
@@ -329,12 +329,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float x = l.x;
             float y = l.y;
             float r = l.r;
-            if (levelMap.collisionDetected(x, y, r)) {
+            float orient = l.orient;
+            if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
             }
 
             // 2D bodies
-            QualifiedShape qs = levelMap.shapeCollisionDetected(x, y, r);
+            QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
                 Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
@@ -345,6 +346,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         if (targetsRemaining > 0) {
+            //TODO: move proximity check to specialized Orb class
             //finally, check if near endPoint
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
@@ -407,7 +409,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         String s = String.format("%03d", targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
         TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
-        canvas.restore();
 
         s = String.format("Level %03d", levelIndex + 1);
         color = Color.GRAY;
