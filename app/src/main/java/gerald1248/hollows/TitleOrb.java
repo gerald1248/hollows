@@ -19,7 +19,7 @@ public class TitleOrb extends QualifiedShape implements Orb {
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawCircle((float)this.x, (float)this.y, shape.radius, paint);
-        TextUtils.draw(canvas, "T", 48.0f, (float)this.x, (float)this.y, Paint.Align.CENTER, Color.BLACK);
+        TextUtils.draw(canvas, "Hollows", 48.0f, (float)this.x, (float)this.y, Paint.Align.CENTER, Color.BLACK);
     }
 
     @Override

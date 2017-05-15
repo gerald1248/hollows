@@ -20,7 +20,7 @@ public class TextUtils {
         //vertical centering
         if (align == Paint.Align.CENTER) {
             p.getTextBounds(text, 0, text.length(), r);
-            y += r.height();
+            y += r.height()/2;
         }
         canvas.drawText(text, x, y, p);
         canvas.restore();
