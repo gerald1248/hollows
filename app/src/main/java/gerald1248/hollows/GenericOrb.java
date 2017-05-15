@@ -1,25 +1,22 @@
 package gerald1248.hollows;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 
 import org.magnos.impulse.Circle;
 
 /**
- * basic information about the game
- * all information has to be obtainable from game objects
+ * Generic orbs follow the map's radius setting but have no additional capabilities
  */
 
-public class TitleOrb extends QualifiedShape implements Orb {
-    public TitleOrb(float r, int x, int y) {
+public class GenericOrb extends QualifiedShape implements Orb {
+    public GenericOrb(float r, int x, int y) {
         super(new Circle(r), x, y, 0.0f);
     }
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawCircle((float)this.x, (float)this.y, shape.radius, paint);
-        TextUtils.draw(canvas, "T", 48.0f, (float)this.x, (float)this.y, Paint.Align.CENTER, Color.BLACK);
     }
 
     @Override
@@ -29,6 +26,6 @@ public class TitleOrb extends QualifiedShape implements Orb {
 
     @Override
     public void onLand(Canvas canvas, Paint paint) {
-
     }
+
 }

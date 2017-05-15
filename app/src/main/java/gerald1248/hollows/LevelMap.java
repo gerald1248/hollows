@@ -28,7 +28,6 @@ import static android.graphics.Bitmap.createBitmap;
 
 public class LevelMap {
     LinkedList<QualifiedShape> shapes = new LinkedList<QualifiedShape>();
-    LinkedList<Body> staticBodies = new LinkedList<Body>();
     private char[][] charMap = new char[50][50];
 
     private Canvas offscreenCanvas = null;
@@ -61,7 +60,6 @@ public class LevelMap {
     public void setLevelIndex(int levelIndex) {
         this.levelIndex = levelIndex;
         shapes.clear();
-        staticBodies.clear();
         clearLevelMap();
         offscreenCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
@@ -93,7 +91,12 @@ public class LevelMap {
                 continue;
             } else if (Character.isDigit(c)) {
                 int d = Character.getNumericValue(c);
-                addCircle(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                addOrb(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = '.';
+                }
+            } else if (c == 't') {
+                addTitleOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
                 if (row < 50 && col < 50) {
                     charMap[row][col] = '.';
                 }
@@ -103,7 +106,7 @@ public class LevelMap {
                 // TODO: use startPoint
             } else if (c == 'e') {
                 endPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
-                addCircle(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
+                addOrb(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
                 if (row < 50 && col < 50) {
                     charMap[row][col] = c;
                 }
@@ -122,13 +125,9 @@ public class LevelMap {
         int shapesLen = shapes.size();
         for (int i = 0; i < shapesLen; i++) {
             QualifiedShape qs = shapes.get(i);
-            Shape s = qs.shape;
-            if (s instanceof Circle) {
-                Circle c = (Circle) s;
-                float r = c.radius;
-                float x = qs.x;
-                float y = qs.y;
-                offscreenCanvas.drawCircle(x, y, r, paint);
+            if (qs instanceof Orb) {
+                Orb o = (Orb)qs;
+                o.draw(offscreenCanvas, paint);
             }
         }
     }
@@ -145,8 +144,12 @@ public class LevelMap {
         shapes.add(new QualifiedShape(new Polygon(w, h), x, y, orient));
     }
 
-    public void addCircle(float r, int cx, int cy) {
-        shapes.add(new QualifiedShape(new Circle(r), cx, cy, 0.0f));
+    public void addOrb(float r, int cx, int cy) {
+        shapes.add(new GenericOrb(r, cx, cy));
+    }
+
+    public void addTitleOrb(float r, int cx, int cy) {
+        shapes.add(new TitleOrb(r, cx, cy));
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
@@ -176,7 +179,6 @@ public class LevelMap {
             b.dynamicFriction = 0.2f;
             b.staticFriction = 0.4f;
             b.setStatic();
-            staticBodies.add(b); //not used yet
         }
     }
 
@@ -201,6 +203,7 @@ public class LevelMap {
         return (c != '.');
     }
 
+    //TODO: move collision logic to Orb objects
     public QualifiedShape shapeCollisionDetected(float cx, float cy, float r) {
         for (int i = 0; i < shapes.size(); i++) {
             QualifiedShape qs = shapes.get(i);

@@ -406,25 +406,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         String s = String.format("%03d", targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        drawText(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
+        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
         canvas.restore();
 
         s = String.format("Level %03d", levelIndex + 1);
         color = Color.GRAY;
-        drawText(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
+        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
 
-        canvas.restore();
-    }
-
-    private void drawText(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color) {
-        canvas.save();
-        Paint p = new Paint();
-        Rect r = new Rect();
-        p.setColor(color);
-        p.setTextAlign(align);
-        p.setTextSize(size);
-        p.getTextBounds(text, 0, text.length(), r);
-        canvas.drawText(text, x, y, p);
         canvas.restore();
     }
 }

@@ -7,7 +7,6 @@ import android.media.MediaPlayer;
  * LoopMediaPlayer class by Mattia Maestrini
  * with utility functions by code-read
  * see http://stackoverflow.com/questions/26274182/not-able-to-achieve-gapless-audio-looping-so-far-on-android/29883923#29883923
- * TODO: create a jar, make LoopMediaPlayer a dependency
  */
 
 public class LoopMediaPlayer {
