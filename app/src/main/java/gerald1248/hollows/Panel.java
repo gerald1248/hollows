@@ -91,6 +91,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         body.setOrient((float)-Math.PI/2); //PI
         initBodyPhysics(body);
+
         initialBodyMass = body.mass;
 
         //actual position matches start point
@@ -163,9 +164,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
                 float orient = body.orient;
                 float mult = 1500000.0F;
-                float c = (float) Math.cos(orient + Math.PI / 2);
-                float s = (float) Math.sin(orient + Math.PI / 2);
-                Vec2 v = new Vec2(mult * -c, mult * -s);
+                float c = (float) Math.cos(orient);
+                float s = (float) Math.sin(orient);
+
+                Vec2 v = new Vec2(mult * c, mult * s);
                 body.applyForce(v);
             }
         }

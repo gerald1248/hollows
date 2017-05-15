@@ -207,15 +207,10 @@ public class LevelMap {
         collisionVertices[3].x = cx + r * (float)Math.cos(orient + Math.PI * 1.25);
         collisionVertices[3].y = cy + r * (float)Math.sin(orient + Math.PI * 1.25);
 
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-
         for (int i = 0; i < vertexCount; i++) {
             float x = collisionVertices[i].x;
             float y = collisionVertices[i].y;
             System.out.printf("[%d] orient=%.2f x=%.2f y=%.2f\n", i, orient, x, y);
-
-            offscreenCanvas.drawCircle(x, y, 2.0f, paint);
 
             int row = Math.round(y / Constants.TILE_LENGTH);
             int col = Math.round(x / Constants.TILE_LENGTH);
@@ -230,7 +225,6 @@ public class LevelMap {
             }
 
             if (Tile.detectCollision(type, x % Constants.TILE_LENGTH, y % Constants.TILE_LENGTH)) {
-                System.out.printf("collision type=%c row=%d col=%d x=%.2f y=%.2f\n", type, row, col, x % Constants.TILE_LENGTH, y % Constants.TILE_LENGTH);
                 return true;
             }
         }

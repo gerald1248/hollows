@@ -28,7 +28,9 @@ public class Wave implements Projectile {
     public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
         this.cy = cy;
-        this.orient = orient - (float)Math.PI/2; //12 o'clock
+        //PI
+        //this.orient = orient - (float)Math.PI/2; //12 o'clock
+        this.orient = orient;
         this.sweep = sweep;
         this.steps = steps;
         this.stepsRemaining = steps;
