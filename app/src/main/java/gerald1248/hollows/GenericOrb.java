@@ -20,12 +20,12 @@ public class GenericOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire(Canvas canvas, Paint paint) {
+    public void onFire() {
         //do nothing for now
     }
 
     @Override
-    public void onLand(Canvas canvas, Paint paint) {
+    public void onLand() {
     }
 
     @Override

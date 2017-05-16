@@ -44,10 +44,12 @@ public class LevelMap {
 
     public LevelMap(Context context) {
         this.context = context;
+
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+
         clearLevelMap();
 
         collisionVertices = new Vec2[vertexCount];
@@ -108,6 +110,11 @@ public class LevelMap {
                 if (row < 50 && col < 50) {
                     charMap[row][col] = '.';
                 }
+            } else if (c == 'm') {
+                addAudioOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                if (row < 50 && col < 50) {
+                    charMap[row][col] = '.';
+                }
             } else if (c == 's') {
                 startPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
                 // no need to update charMap - '.' is fine
@@ -156,7 +163,11 @@ public class LevelMap {
     }
 
     public void addTitleOrb(float r, int cx, int cy) {
-        shapes.add(new TitleOrb(r, cx, cy));
+        shapes.add(new TitleOrb(context, r, cx, cy));
+    }
+
+    public void addAudioOrb(float r, int cx, int cy) {
+        shapes.add(new AudioOrb(context, r, cx, cy));
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
