@@ -28,4 +28,14 @@ public class GenericOrb extends QualifiedShape implements Orb {
     public void onLand(Canvas canvas, Paint paint) {
     }
 
+    @Override
+    public String getBannerText() {
+        return "";
+    }
+
+    @Override
+    public String[] getInfoLines() {
+        return new String[]{};
+    }
+
 }

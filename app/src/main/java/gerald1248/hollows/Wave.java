@@ -28,8 +28,6 @@ public class Wave implements Projectile {
     public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
         this.cy = cy;
-        //PI
-        //this.orient = orient - (float)Math.PI/2; //12 o'clock
         this.orient = orient;
         this.sweep = sweep;
         this.steps = steps;
@@ -61,7 +59,7 @@ public class Wave implements Projectile {
         canvas.drawArc(rect, (float)Math.toDegrees(orient - sweep/2), (float)Math.toDegrees(sweep), false, paint);
         canvas.restore();
     }
-    public boolean done() {
+    public boolean isDone() {
         return (stepsRemaining <= 0);
     }
 }

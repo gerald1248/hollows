@@ -118,8 +118,7 @@ public class LevelMap {
                 if (row < 50 && col < 50) {
                     charMap[row][col] = c;
                 }
-            }
-            else {
+            } else {
                 Tile tile = new Tile(c, row, col);
                 tile.draw(offscreenCanvas, paint);
                 if (row < 50 && col < 50) {
@@ -134,7 +133,7 @@ public class LevelMap {
         for (int i = 0; i < shapesLen; i++) {
             QualifiedShape qs = shapes.get(i);
             if (qs instanceof Orb) {
-                Orb o = (Orb)qs;
+                Orb o = (Orb) qs;
                 o.draw(offscreenCanvas, paint);
             }
         }
@@ -191,26 +190,28 @@ public class LevelMap {
     }
 
     public boolean detectCollision(float cx, float cy, float r, float orient) {
+        cx -= Constants.TILE_LENGTH / 2;
+        cy -= Constants.TILE_LENGTH / 2;
+
         //center
         collisionVertices[0].x = cx;
         collisionVertices[0].y = cy;
 
-        //tip
-        collisionVertices[1].x = cx + r * (float)Math.cos(orient);
-        collisionVertices[1].y = cy + r * (float)Math.sin(orient);
+        //nose
+        collisionVertices[1].x = cx + r * (float) Math.cos(orient);
+        collisionVertices[1].y = cy + r * (float) Math.sin(orient);
 
         //bottom right corner
-        collisionVertices[2].x = cx + r * (float)Math.cos(orient + Math.PI * 0.75);
-        collisionVertices[2].y = cy + r * (float)Math.sin(orient + Math.PI * 0.75);
+        collisionVertices[2].x = cx + r * (float) Math.cos(orient + Math.PI * 0.75);
+        collisionVertices[2].y = cy + r * (float) Math.sin(orient + Math.PI * 0.75);
 
         //bottom left corner
-        collisionVertices[3].x = cx + r * (float)Math.cos(orient + Math.PI * 1.25);
-        collisionVertices[3].y = cy + r * (float)Math.sin(orient + Math.PI * 1.25);
+        collisionVertices[3].x = cx + r * (float) Math.cos(orient + Math.PI * 1.25);
+        collisionVertices[3].y = cy + r * (float) Math.sin(orient + Math.PI * 1.25);
 
         for (int i = 0; i < vertexCount; i++) {
             float x = collisionVertices[i].x;
             float y = collisionVertices[i].y;
-            System.out.printf("[%d] orient=%.2f x=%.2f y=%.2f\n", i, orient, x, y);
 
             int row = Math.round(y / Constants.TILE_LENGTH);
             int col = Math.round(x / Constants.TILE_LENGTH);
@@ -255,5 +256,8 @@ public class LevelMap {
     public Point getEndPoint() {
         return endPoint;
     }
-    public Point getStartPoint() { return startPoint; }
+
+    public Point getStartPoint() {
+        return startPoint;
+    }
 }

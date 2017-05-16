@@ -45,11 +45,12 @@ public class Player implements GameObject {
         paint.setColor(color);
 
         float paddingX = ((float) r.width()) / 10.0f;
+        float paddingY = ((float) r.height()) / 10.0f;
         float[] points = {
                 (float) r.right, r.exactCenterY(),
-                (float) r.left, (float) r.bottom,
+                (float) r.left, (float) r.bottom - paddingY,
                 (float) r.left + paddingX, r.exactCenterY(),
-                (float) r.left, (float) r.top,
+                (float) r.left, (float) r.top + paddingY,
                 (float) r.right, r.exactCenterY()
         };
 

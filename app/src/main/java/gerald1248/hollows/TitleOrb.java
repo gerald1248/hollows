@@ -1,7 +1,6 @@
 package gerald1248.hollows;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 
 import org.magnos.impulse.Circle;
@@ -19,7 +18,6 @@ public class TitleOrb extends QualifiedShape implements Orb {
     @Override
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawCircle((float)this.x, (float)this.y, shape.radius, paint);
-        TextUtils.draw(canvas, "Hollows", 48.0f, (float)this.x, (float)this.y, Paint.Align.CENTER, Color.BLACK);
     }
 
     @Override
@@ -30,5 +28,15 @@ public class TitleOrb extends QualifiedShape implements Orb {
     @Override
     public void onLand(Canvas canvas, Paint paint) {
 
+    }
+
+    @Override
+    public String getBannerText() {
+        return "Hollows";
+    }
+
+    @Override
+    public String[] getInfoLines() {
+        return new String[]{"Move left \u2013 rotate anti-clockwise", "Move right \u2013 rotate clockwise", "Long press \u2013 accelerate", "Short press \u2013 fire"};
     }
 }
