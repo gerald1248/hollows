@@ -60,8 +60,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private String bannerText;
     private String[] infoLines;
 
+    private Context context;
+
+    private HomingDevice homingDevice = null;
+
     public Panel(Context context) throws IOException {
         super(context);
+
+        this.context = context;
 
         getHolder().addCallback(this);
 
@@ -75,6 +81,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         startPoint = levelMap.getStartPoint();
         endPoint = levelMap.getEndPoint();
+
+        homingDevice = new HomingDevice(Constants.TILE_LENGTH, Constants.SCREEN_HEIGHT - Constants.TILE_LENGTH, Constants.TILE_LENGTH/2);
 
         initPlayer(); //canvas
         initBody(); //impulse
@@ -356,6 +364,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
                 waves.add(wave);
                 detonate();
+
+                Orb o = (Orb)qs;
+                if (o instanceof AudioOrb) {
+                    MainActivity mainActivity = (MainActivity)context;
+                    mainActivity.toggleAudio();
+                }
             }
         }
 
@@ -426,6 +440,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         // display targets remaining
         updateInfo(canvas);
+
+        // update homing device - angle to endPoint
+        float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
+
+        homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
+        homingDevice.draw(canvas);
     }
 
     void updateInfo(Canvas canvas) {

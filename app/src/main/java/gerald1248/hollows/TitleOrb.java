@@ -1,9 +1,16 @@
 package gerald1248.hollows;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import org.magnos.impulse.Circle;
+
+import static gerald1248.hollows.R.string.app_name;
+import static gerald1248.hollows.R.string.info_line1;
+import static gerald1248.hollows.R.string.info_line2;
+import static gerald1248.hollows.R.string.info_line3;
 
 /**
  * basic information about the game
@@ -11,8 +18,11 @@ import org.magnos.impulse.Circle;
  */
 
 public class TitleOrb extends QualifiedShape implements Orb {
-    public TitleOrb(float r, int x, int y) {
+    private Context context;
+
+    public TitleOrb(Context context, float r, int x, int y) {
         super(new Circle(r), x, y, 0.0f);
+        this.context = context;
     }
 
     @Override
@@ -21,22 +31,27 @@ public class TitleOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire(Canvas canvas, Paint paint) {
+    public void onFire() {
         //do nothing for now
     }
 
     @Override
-    public void onLand(Canvas canvas, Paint paint) {
+    public void onLand() {
 
     }
 
     @Override
     public String getBannerText() {
-        return "Hollows";
+        return context.getResources().getString(app_name);
     }
 
     @Override
     public String[] getInfoLines() {
-        return new String[]{"Move left \u2013 rotate anti-clockwise", "Move right \u2013 rotate clockwise", "Long press \u2013 accelerate", "Short press \u2013 fire"};
+        Resources r = context.getResources();
+        return new String[]{
+                r.getString(info_line1),
+                r.getString(info_line2),
+                r.getString(info_line3)
+        };
     }
 }

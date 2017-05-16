@@ -12,7 +12,6 @@ import java.io.IOException;
 
 public class MainActivity extends Activity {
 
-    //private MediaPlayer mediaPlayer = null;
     private LoopMediaPlayer loopMediaPlayer = null;
     private Panel panel = null;
 
@@ -44,19 +43,15 @@ public class MainActivity extends Activity {
         super.onResume();
         panel.setRunning(true);
 
-        if (Constants.PLAY_AUDIO) {
-            loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, randomAudioResource());
-        }
+        loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, randomAudioResource());
+        loopMediaPlayer.pause();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         panel.setRunning(false);
-        if (Constants.PLAY_AUDIO) {
-            loopMediaPlayer.stop();
-            loopMediaPlayer.release();
-        }
+        loopMediaPlayer.pause();
     }
 
     @Override
@@ -77,8 +72,11 @@ public class MainActivity extends Activity {
         return resources[index];
     }
 
-    protected MediaPlayer getMediaPlayer() {
-        //TODO: consider looping with dual MediaPlayer instances
-        return MediaPlayer.create(MainActivity.this, randomAudioResource());
+    public void toggleAudio() {
+        if (loopMediaPlayer.isPlaying()) {
+            loopMediaPlayer.pause();
+        } else {
+            loopMediaPlayer.start();
+        }
     }
 }
