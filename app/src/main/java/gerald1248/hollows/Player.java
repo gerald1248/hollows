@@ -24,7 +24,7 @@ public class Player implements GameObject {
         this.r = rectangle;
         this.orient = orient;
         this.color = color;
-        this.orient = 0.0f;
+        this.orient = -0.5f * (float)Math.PI;
         this.scale = 1.0f;
         this.explode = false;
     }
@@ -47,12 +47,13 @@ public class Player implements GameObject {
         float paddingX = ((float) r.width()) / 10.0f;
         float paddingY = ((float) r.height()) / 10.0f;
         float[] points = {
-                r.exactCenterX(), (float) r.top,
-                (float) r.right - paddingX, (float) r.bottom,
-                r.exactCenterX(), (float) r.bottom - paddingY,
-                (float) r.left + paddingX, (float) r.bottom,
-                (float) r.exactCenterX(), (float) r.top
+                (float) r.right, r.exactCenterY(),
+                (float) r.left, (float) r.bottom - paddingY,
+                (float) r.left + paddingX, r.exactCenterY(),
+                (float) r.left, (float) r.top + paddingY,
+                (float) r.right, r.exactCenterY()
         };
+
         Path path = new Path();
         path.moveTo(points[0], points[1]);
         for (int i = 2; i < points.length; i += 2) {

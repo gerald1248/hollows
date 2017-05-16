@@ -55,7 +55,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private Point startPoint = null; // not yet used
     private Point endPoint = null;
 
-    private float initialBodyMass = 0.0f;
+    private float initialBodyMass = -1.0f;
+
+    private String bannerText;
+    private String[] infoLines;
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -89,9 +92,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
-        body.setOrient((float)-Math.PI/2); //PI
+        body.setOrient((float)-Math.PI/2);
         initBodyPhysics(body);
-        initialBodyMass = body.mass;
+
+        if (initialBodyMass < -0.0f) {
+            initialBodyMass = body.mass;
+        } else {
+            body.mass = initialBodyMass;
+        }
 
         //actual position matches start point
         body.position.x = startPoint.x;
@@ -112,7 +120,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void reset(boolean advance) {
-
+        impulse.clear();
         if (advance) {
             //which level next?
             levelIndex++;
@@ -163,9 +171,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
                 float orient = body.orient;
                 float mult = 1500000.0F;
-                float c = (float) Math.cos(orient + Math.PI / 2);
-                float s = (float) Math.sin(orient + Math.PI / 2);
-                Vec2 v = new Vec2(mult * -c, mult * -s);
+                float c = (float) Math.cos(orient);
+                float s = (float) Math.sin(orient);
+
+                Vec2 v = new Vec2(mult * c, mult * s);
                 body.applyForce(v);
             }
         }
@@ -309,7 +318,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         //check for collisions
-        if (levelMap.collisionDetected(v.x, v.y, Constants.PLAYER_RADIUS)) {
+        if (levelMap.detectCollision(v.x, v.y, Constants.PLAYER_RADIUS, player.orient)) {
             body.setStatic();
             player.explode(true);
             targetsRemaining = 100;
@@ -326,15 +335,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             // level map
             Laser l = laserIt.next();
 
+            if (l.isDone()) {
+                laserIt.remove();
+                continue;
+            }
+
             float x = l.x;
             float y = l.y;
             float r = l.r;
-            if (levelMap.collisionDetected(x, y, r)) {
+            float orient = l.orient;
+            if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
             }
 
             // 2D bodies
-            QualifiedShape qs = levelMap.shapeCollisionDetected(x, y, r);
+            QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
                 Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
@@ -345,6 +360,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         if (targetsRemaining > 0) {
+            //TODO: move proximity check to specialized Orb class
             //finally, check if near endPoint
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
@@ -355,6 +371,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (targetsRemaining == 99 || (targetsRemaining % 10) == 0) {
                 //TODO: play bell sound?
             }
+        }
+
+        //TODO: add charMap test that ensures space between orbs
+        //add 0.5r tolerance to avoid flicker
+        Orb o = (Orb)levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
+        if (o == null) {
+            bannerText = "";
+            infoLines = new String[]{};
+        } else {
+            bannerText = o.getBannerText();
+            infoLines = o.getInfoLines();
         }
     }
 
@@ -380,7 +407,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         Iterator<Wave> it = waves.iterator();
         while (it.hasNext()) {
             Wave w = it.next();
-            if (w.done()) {
+            if (w.isDone()) {
                 it.remove();
             } else {
                 w.draw(canvas);
@@ -390,7 +417,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         Iterator<Laser> laserIt = lasers.iterator();
         while (laserIt.hasNext()) {
             Laser l = laserIt.next();
-            if (l.done()) {
+            if (l.isDone()) {
                 laserIt.remove();
             } else {
                 l.draw(canvas);
@@ -406,25 +433,20 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         String s = String.format("%03d", targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        drawText(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
-        canvas.restore();
+        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
 
         s = String.format("Level %03d", levelIndex + 1);
         color = Color.GRAY;
-        drawText(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
+        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
 
-        canvas.restore();
-    }
+        TextUtils.draw(canvas, bannerText, 96.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color);
 
-    private void drawText(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color) {
-        canvas.save();
-        Paint p = new Paint();
-        Rect r = new Rect();
-        p.setColor(color);
-        p.setTextAlign(align);
-        p.setTextSize(size);
-        p.getTextBounds(text, 0, text.length(), r);
-        canvas.drawText(text, x, y, p);
+        float yOffset = 0.0f;
+        for (String line : infoLines) {
+            TextUtils.draw(canvas, line, 48.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.75f + yOffset, Paint.Align.CENTER, color);
+            yOffset += 56.0f;
+        }
+
         canvas.restore();
     }
 }

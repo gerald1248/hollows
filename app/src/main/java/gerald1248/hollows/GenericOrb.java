@@ -6,12 +6,11 @@ import android.graphics.Paint;
 import org.magnos.impulse.Circle;
 
 /**
- * basic information about the game
- * all information has to be obtainable from game objects
+ * Generic orbs follow the map's radius setting but have no additional capabilities
  */
 
-public class TitleOrb extends QualifiedShape implements Orb {
-    public TitleOrb(float r, int x, int y) {
+public class GenericOrb extends QualifiedShape implements Orb {
+    public GenericOrb(float r, int x, int y) {
         super(new Circle(r), x, y, 0.0f);
     }
 
@@ -27,16 +26,16 @@ public class TitleOrb extends QualifiedShape implements Orb {
 
     @Override
     public void onLand(Canvas canvas, Paint paint) {
-
     }
 
     @Override
     public String getBannerText() {
-        return "Hollows";
+        return "";
     }
 
     @Override
     public String[] getInfoLines() {
-        return new String[]{"Move left \u2013 rotate anti-clockwise", "Move right \u2013 rotate clockwise", "Long press \u2013 accelerate", "Short press \u2013 fire"};
+        return new String[]{};
     }
+
 }

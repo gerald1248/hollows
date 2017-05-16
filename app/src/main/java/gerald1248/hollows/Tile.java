@@ -112,4 +112,27 @@ public class Tile {
                 break;
         }
     }
+    static public boolean detectCollision(char type, float x, float y) {
+        switch (type) {
+            case '+':
+                return true;
+            case '|': //approx. for backslash
+                return x < y;
+            case '/':
+                return x + y >= Constants.TILE_LENGTH;
+            case '`':
+                return x > y;
+            case '´':
+                return x + y <= Constants.TILE_LENGTH;
+            case '^':
+                //TODO
+                return x > Constants.TILE_LENGTH * 0.25f && x < Constants.TILE_LENGTH * 0.75f;
+            case 'v':
+                //TODO
+                return x > Constants.TILE_LENGTH * 0.25f && x < Constants.TILE_LENGTH * 0.75f;
+            default:
+                break;
+        }
+        return false;
+    }
 }

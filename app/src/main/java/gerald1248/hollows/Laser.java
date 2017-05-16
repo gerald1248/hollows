@@ -29,7 +29,7 @@ public class Laser implements Projectile {
         this.cy = cy;
         this.x = this.cx;
         this.y = this.cy;
-        this.orient = orient - (float)Math.PI/2; //12 o'clock
+        this.orient = orient;
         this.steps = steps;
         this.stepsRemaining = steps;
     }
@@ -55,7 +55,7 @@ public class Laser implements Projectile {
         canvas.drawCircle(x, y, r, paint);
         canvas.restore();
     }
-    public boolean done() {
+    public boolean isDone() {
         return (stepsRemaining <= 0);
     }
 }
