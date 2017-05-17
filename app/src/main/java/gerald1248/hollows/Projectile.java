@@ -10,4 +10,5 @@ import android.graphics.Canvas;
 public interface Projectile {
     public void draw(Canvas canvas);
     public boolean isDone();
+    public void setOffset(float dx, float dy);
 }

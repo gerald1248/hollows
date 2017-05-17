@@ -34,11 +34,13 @@ public class Wave implements Projectile {
         this.stepsRemaining = steps;
     }
 
+    @Override
     public void setOffset(float x, float y) {
         xOffset = x;
         yOffset = y;
     };
 
+    @Override
     public void draw(Canvas canvas) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
@@ -59,6 +61,8 @@ public class Wave implements Projectile {
         canvas.drawArc(rect, (float)Math.toDegrees(orient - sweep/2), (float)Math.toDegrees(sweep), false, paint);
         canvas.restore();
     }
+
+    @Override
     public boolean isDone() {
         return (stepsRemaining <= 0);
     }

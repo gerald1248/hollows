@@ -151,6 +151,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void detonate() {
+        lasers.clear();
+        enemyLasers.clear();
         detonateFramesRemaining = Constants.FRAMES_DETONATE;
     }
 
@@ -237,8 +239,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     }
                 }
                 float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
-                Laser l = new Laser(x2, y2, angle, 50); //TODO: currently centered on player
-                System.out.printf("laser angle=%.2f\n", angle); //TODO: adjust
+                angle -= (float)Math.PI/2;
+                Laser l = new Laser(x2, y2, angle, 100);
+                l.setOffset(x1 - x2, y1 - y2);
+                l.divideVelocityBy(2.0f);
                 enemyLasers.add(l);
             }
         }
@@ -378,9 +382,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //check if laser has hit a static object; if it has, laser disappears
         //also check if it's hit a 2D body
 
-        //iterate over lasers
+        //iterate over the player's laser bolts
         Iterator<Laser> laserIt = lasers.iterator();
-
         while (laserIt.hasNext()) {
             // level map
             Laser l = laserIt.next();
@@ -396,6 +399,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float orient = l.orient;
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
+                continue;
             }
 
             // 2D bodies
@@ -414,6 +418,48 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 } else if (o instanceof Tower) {
                     levelMap.removeTower((Tower)o);
                 }
+            }
+        }
+
+        //iterate over enemy lasers
+        laserIt = enemyLasers.iterator();
+        while (laserIt.hasNext()) {
+            // level map
+            Laser l = laserIt.next();
+
+            if (l.isDone()) {
+                laserIt.remove();
+                continue;
+            }
+
+            float x = l.x;
+            float y = l.y;
+            float r = l.r;
+            float orient = l.orient;
+            //2D bodies - NB: tower laser starts from shape, so set minimum radius
+            if (r > Constants.TILE_LENGTH * 2) {
+                if (levelMap.detectCollision(x, y, r, orient)) {
+                    laserIt.remove();
+                    continue;
+                }
+
+                QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
+                if (qs != null) {
+                    laserIt.remove();
+                    continue;
+                }
+            }
+
+            //proximity to player
+            float playerX = body.position.x;
+            float playerY = body.position.y;
+            float d = (float) Math.hypot((double) x - (double) playerX, (double) y - (double) playerY);
+
+            if (d < (r + Constants.PLAYER_RADIUS)) {
+                body.setStatic();
+                player.explode(true);
+                targetsRemaining = 100;
+                detonate();
             }
         }
 
@@ -497,7 +543,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         // update homing device - angle to endPoint
         float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
-
         homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
         homingDevice.draw(canvas);
     }
