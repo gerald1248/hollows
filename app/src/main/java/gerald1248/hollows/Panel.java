@@ -40,6 +40,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
     private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
+    private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
 
@@ -51,6 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private int targetsRemaining = initialTargetsRemaining;
 
     private int levelIndex = 0;
+    private int frames = 0;
 
     private Point startPoint = null; // not yet used
     private Point endPoint = null;
@@ -63,6 +65,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private Context context;
 
     private HomingDevice homingDevice = null;
+
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -154,7 +157,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     // tick() is called from main loop when ready to draw frame
     // determines state of motion events
     public void tick() {
-        // potential race condition, hence ConcurrentHashMap
+        frames++;
+
+        // potential race condition, so use ConcurrentHashMap
         for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
             Integer key = entry.getKey();
             MultitouchState value = entry.getValue();
@@ -199,6 +204,43 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //TODO: advance to next level
             targetsRemaining = initialTargetsRemaining;
             reset(true);
+        }
+
+        //TODO: move out of Panel class
+        if (frames % Constants.INTERVAL_FRAMES == 0) {
+            for (QualifiedShape qs : levelMap.getTowers()) {
+                Tower t = (Tower)qs;
+
+                //first check player is within detection field
+                //currently only N and S orientations are used
+
+                float x1 = body.position.x;
+                float y1 = body.position.y;
+                float x2 = t.x;
+                float y2 = t.y;
+                if (t.orient < 0.0f) {
+                    if (y2 < y1) {
+                        continue;
+                    }
+                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+
+                    if (d > Constants.TOWER_RANGE) {
+                        continue;
+                    }
+                } else {
+                    if (y2 > y1) {
+                        continue;
+                    }
+                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+                    if (d > Constants.TOWER_RANGE) {
+                        continue;
+                    }
+                }
+                float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
+                Laser l = new Laser(x2, y2, angle, 50); //TODO: currently centered on player
+                System.out.printf("laser angle=%.2f\n", angle); //TODO: adjust
+                enemyLasers.add(l);
+            }
         }
     }
 
@@ -369,6 +411,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 if (o instanceof AudioOrb) {
                     MainActivity mainActivity = (MainActivity)context;
                     mainActivity.toggleAudio();
+                } else if (o instanceof Tower) {
+                    levelMap.removeTower((Tower)o);
                 }
             }
         }
@@ -429,6 +473,16 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         Iterator<Laser> laserIt = lasers.iterator();
+        while (laserIt.hasNext()) {
+            Laser l = laserIt.next();
+            if (l.isDone()) {
+                laserIt.remove();
+            } else {
+                l.draw(canvas);
+            }
+        }
+
+        laserIt = enemyLasers.iterator();
         while (laserIt.hasNext()) {
             Laser l = laserIt.next();
             if (l.isDone()) {
