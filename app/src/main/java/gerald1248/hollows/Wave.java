@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import org.magnos.impulse.Body;
+
 /**
  * Projectiles are used whenever waves emanating from objects are shown
  * The panel maintains a linked list of these
@@ -22,8 +24,7 @@ public class Wave implements Projectile {
     private int steps, stepsRemaining;
     private float r = 0.0f;
     private float dr = Constants.PLAYER_RADIUS;
-    private float xOffset = 0.0f;
-    private float yOffset = 0.0f;
+    private Body observer = null;
 
     public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
@@ -34,11 +35,15 @@ public class Wave implements Projectile {
         this.stepsRemaining = steps;
     }
 
-    public void setOffset(float x, float y) {
-        xOffset = x;
-        yOffset = y;
-    };
+    @Override
+    public void setObserver(Body observer) {
+        this.observer = observer;
+    }
 
+    @Override
+    public void setVelocityFactor(float f) { dr *= f; }
+
+    @Override
     public void draw(Canvas canvas) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
@@ -46,19 +51,23 @@ public class Wave implements Projectile {
         }
 
         canvas.save();
-        canvas.translate(-cx + -xOffset + Constants.SCREEN_WIDTH/2, -cy - yOffset + Constants.SCREEN_HEIGHT/2);
+        float translateX = (observer == null) ? cx : observer.position.x;
+        float translateY = (observer == null) ? cy : observer.position.y;
+        canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
 
         r += dr;
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
         paint.setColor(Color.WHITE);
-        int alpha = ((int)Math.round(stepsRemaining * 100/steps) * 5) % 255;
+        int alpha = (Math.round(stepsRemaining * 100/steps) * 5) % 255;
         paint.setAlpha(alpha); // opaque then tail off quickly
         paint.setStyle(Paint.Style.STROKE);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
         canvas.drawArc(rect, (float)Math.toDegrees(orient - sweep/2), (float)Math.toDegrees(sweep), false, paint);
         canvas.restore();
     }
+
+    @Override
     public boolean isDone() {
         return (stepsRemaining <= 0);
     }

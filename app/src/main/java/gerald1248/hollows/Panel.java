@@ -40,6 +40,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
     private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
+    private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
 
@@ -51,6 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private int targetsRemaining = initialTargetsRemaining;
 
     private int levelIndex = 0;
+    private int frames = 0;
 
     private Point startPoint = null; // not yet used
     private Point endPoint = null;
@@ -63,6 +65,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private Context context;
 
     private HomingDevice homingDevice = null;
+
 
     public Panel(Context context) throws IOException {
         super(context);
@@ -148,13 +151,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void detonate() {
+        lasers.clear();
+        enemyLasers.clear();
         detonateFramesRemaining = Constants.FRAMES_DETONATE;
     }
 
     // tick() is called from main loop when ready to draw frame
     // determines state of motion events
     public void tick() {
-        // potential race condition, hence ConcurrentHashMap
+        frames++;
+
+        // potential race condition, so use ConcurrentHashMap
         for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
             Integer key = entry.getKey();
             MultitouchState value = entry.getValue();
@@ -199,6 +206,45 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //TODO: advance to next level
             targetsRemaining = initialTargetsRemaining;
             reset(true);
+        }
+
+        //TODO: move out of Panel class
+        if (frames % Constants.INTERVAL_FRAMES == 0) {
+            for (QualifiedShape qs : levelMap.getTowers()) {
+                Tower t = (Tower)qs;
+
+                //first check player is within detection field
+                //currently only N and S orientations are used
+
+                float x1 = body.position.x;
+                float y1 = body.position.y;
+                float x2 = t.x;
+                float y2 = t.y;
+                if (t.orient < 0.0f) {
+                    if (y2 < y1) {
+                        continue;
+                    }
+                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+
+                    if (d > Constants.TOWER_RANGE) {
+                        continue;
+                    }
+                } else {
+                    if (y2 > y1) {
+                        continue;
+                    }
+                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+                    if (d > Constants.TOWER_RANGE) {
+                        continue;
+                    }
+                }
+                float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
+                angle -= (float)Math.PI/2;
+                Laser l = new Laser(x2, y2, angle, 100);
+                l.setObserver(body);
+                l.setVelocityFactor(0.5f);
+                enemyLasers.add(l);
+            }
         }
     }
 
@@ -336,9 +382,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //check if laser has hit a static object; if it has, laser disappears
         //also check if it's hit a 2D body
 
-        //iterate over lasers
+        //iterate over the player's laser bolts
         Iterator<Laser> laserIt = lasers.iterator();
-
         while (laserIt.hasNext()) {
             // level map
             Laser l = laserIt.next();
@@ -354,14 +399,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float orient = l.orient;
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
+                continue;
             }
 
             // 2D bodies
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
-                Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
-                wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
+
+                //TODO: reduce sweep for towers
+                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
+                wave.setObserver(body);
                 waves.add(wave);
                 detonate();
 
@@ -369,7 +417,52 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 if (o instanceof AudioOrb) {
                     MainActivity mainActivity = (MainActivity)context;
                     mainActivity.toggleAudio();
+                } else if (o instanceof Tower) {
+                    levelMap.removeTower((Tower)o);
                 }
+            }
+        }
+
+        //iterate over enemy lasers
+        laserIt = enemyLasers.iterator();
+        while (laserIt.hasNext()) {
+            // level map
+            Laser l = laserIt.next();
+
+            if (l.isDone()) {
+                laserIt.remove();
+                continue;
+            }
+
+            float x = l.x;
+            float y = l.y;
+            float r = l.r;
+            float dFromTower = l.d;
+            float orient = l.orient;
+            //2D bodies - NB: tower laser starts from shape, so set minimum radius
+            if (dFromTower > Constants.TILE_LENGTH * 2) {
+                if (levelMap.detectCollision(x, y, r, orient)) {
+                    laserIt.remove();
+                    continue;
+                }
+
+                QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
+                if (qs != null) {
+                    laserIt.remove();
+                    continue;
+                }
+            }
+
+            //proximity to player
+            float playerX = body.position.x;
+            float playerY = body.position.y;
+            float d = (float) Math.hypot((double) x - (double) playerX, (double) y - (double) playerY);
+
+            if (d < (r + Constants.PLAYER_RADIUS)) {
+                body.setStatic();
+                player.explode(true);
+                targetsRemaining = 100;
+                detonate();
             }
         }
 
@@ -438,12 +531,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             }
         }
 
+        laserIt = enemyLasers.iterator();
+        while (laserIt.hasNext()) {
+            Laser l = laserIt.next();
+            if (l.isDone()) {
+                laserIt.remove();
+            } else {
+                l.draw(canvas);
+            }
+        }
+
         // display targets remaining
         updateInfo(canvas);
 
         // update homing device - angle to endPoint
         float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
-
         homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
         homingDevice.draw(canvas);
     }
