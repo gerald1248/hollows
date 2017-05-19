@@ -228,21 +228,21 @@ public class LevelMap {
         cx -= Constants.TILE_LENGTH / 2;
         cy -= Constants.TILE_LENGTH / 2;
 
-        //center
-        collisionVertices[0].x = cx;
-        collisionVertices[0].y = cy;
-
         //nose
-        collisionVertices[1].x = cx + r * (float) Math.cos(orient);
-        collisionVertices[1].y = cy + r * (float) Math.sin(orient);
+        collisionVertices[0].x = cx + r * (float) Math.cos(orient);
+        collisionVertices[0].y = cy + r * (float) Math.sin(orient);
 
         //bottom right corner
-        collisionVertices[2].x = cx + r * (float) Math.cos(orient + Math.PI * 0.75);
-        collisionVertices[2].y = cy + r * (float) Math.sin(orient + Math.PI * 0.75);
+        collisionVertices[1].x = cx + r * (float) Math.cos(orient + Math.PI * 0.75);
+        collisionVertices[1].y = cy + r * (float) Math.sin(orient + Math.PI * 0.75);
 
         //bottom left corner
-        collisionVertices[3].x = cx + r * (float) Math.cos(orient + Math.PI * 1.25);
-        collisionVertices[3].y = cy + r * (float) Math.sin(orient + Math.PI * 1.25);
+        collisionVertices[2].x = cx + r * (float) Math.cos(orient + Math.PI * 1.25);
+        collisionVertices[2].y = cy + r * (float) Math.sin(orient + Math.PI * 1.25);
+
+        //center
+        collisionVertices[3].x = cx;
+        collisionVertices[3].y = cy;
 
         for (int i = 0; i < vertexCount; i++) {
             float x = collisionVertices[i].x;
@@ -260,7 +260,10 @@ public class LevelMap {
                 continue;
             }
 
-            if (Tile.detectCollision(type, x % Constants.TILE_LENGTH, y % Constants.TILE_LENGTH)) {
+            float xOffset = x % Constants.TILE_LENGTH;
+            float yOffset = y % Constants.TILE_LENGTH;
+            if (Tile.detectCollision(type, xOffset, yOffset)) {
+                System.out.printf("[vertex=%d] collision orient=%.2f col=%d row=%d type=%c x=%.2f y=%.2f\n", i, orient, col, row, type, xOffset, yOffset);
                 return true;
             }
         }

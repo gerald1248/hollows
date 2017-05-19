@@ -29,9 +29,6 @@ public class AudioOrb extends QualifiedShape implements Orb {
         float cx = (float)this.x;
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
-
-        String label = context.getResources().getString(audio_label);
-        TextUtils.draw(canvas, label, 48.0f, cx, cy, Paint.Align.CENTER, Color.BLACK);
     }
 
     @Override

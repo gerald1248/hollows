@@ -15,18 +15,16 @@ import org.magnos.impulse.Vec2;
 
 public class Laser implements Projectile {
     public float r = 8.0f;
+    public float d = 0.0f;
     public float x, y;
-    //private float xOffset = 0.0f;
-    //private float yOffset = 0.0f;
 
     // all angles in radians until passed to API
-    public float orient; //rad
+    public float orient;
 
     // fixed params
     private float cx;
     private float cy;
     private int steps, stepsRemaining;
-    private float d = 0.0f;
     private float dd = Constants.PLAYER_RADIUS;
     private Body observer = null;
 

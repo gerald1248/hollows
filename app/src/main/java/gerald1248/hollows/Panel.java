@@ -406,6 +406,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
+
+                //TODO: reduce sweep for towers
                 Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
                 wave.setObserver(body);
                 waves.add(wave);
@@ -435,9 +437,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float x = l.x;
             float y = l.y;
             float r = l.r;
+            float dFromTower = l.d;
             float orient = l.orient;
             //2D bodies - NB: tower laser starts from shape, so set minimum radius
-            if (r > Constants.TILE_LENGTH * 2) {
+            if (dFromTower > Constants.TILE_LENGTH * 2) {
                 if (levelMap.detectCollision(x, y, r, orient)) {
                     laserIt.remove();
                     continue;
