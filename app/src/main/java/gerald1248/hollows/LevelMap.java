@@ -225,9 +225,6 @@ public class LevelMap {
     }
 
     public boolean detectCollision(float cx, float cy, float r, float orient) {
-        cx -= Constants.TILE_LENGTH / 2;
-        cy -= Constants.TILE_LENGTH / 2;
-
         //nose
         collisionVertices[0].x = cx + r * (float) Math.cos(orient);
         collisionVertices[0].y = cy + r * (float) Math.sin(orient);
@@ -248,8 +245,8 @@ public class LevelMap {
             float x = collisionVertices[i].x;
             float y = collisionVertices[i].y;
 
-            int row = Math.round(y / Constants.TILE_LENGTH);
-            int col = Math.round(x / Constants.TILE_LENGTH);
+            int row = (int)Math.floor(y / Constants.TILE_LENGTH);
+            int col = (int)Math.floor(x / Constants.TILE_LENGTH);
 
             if (row < 0 || row >= 50 || col < 0 || col >= 50) {
                 continue;
@@ -263,7 +260,10 @@ public class LevelMap {
             float xOffset = x % Constants.TILE_LENGTH;
             float yOffset = y % Constants.TILE_LENGTH;
             if (Tile.detectCollision(type, xOffset, yOffset)) {
+                /*
+                //debug collisions
                 System.out.printf("[vertex=%d] collision orient=%.2f col=%d row=%d type=%c x=%.2f y=%.2f\n", i, orient, col, row, type, xOffset, yOffset);
+                */
                 return true;
             }
         }
