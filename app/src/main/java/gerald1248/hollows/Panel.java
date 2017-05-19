@@ -241,8 +241,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
                 angle -= (float)Math.PI/2;
                 Laser l = new Laser(x2, y2, angle, 100);
-                l.setOffset(x1 - x2, y1 - y2);
-                l.divideVelocityBy(2.0f);
+                l.setObserver(body);
+                l.setVelocityFactor(0.5f);
                 enemyLasers.add(l);
             }
         }
@@ -406,8 +406,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
-                Wave wave = new Wave(0.0f, 0.0f, 0.0f, (float) (2 * Math.PI), 10);
-                wave.setOffset(body.position.x - qs.x, body.position.y - qs.y);
+                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
+                wave.setObserver(body);
                 waves.add(wave);
                 detonate();
 
