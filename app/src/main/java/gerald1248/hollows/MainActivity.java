@@ -2,7 +2,6 @@ package gerald1248.hollows;
 
 import android.app.Activity;
 import android.content.res.Resources;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Window;
@@ -14,6 +13,7 @@ public class MainActivity extends Activity {
 
     private LoopMediaPlayer loopMediaPlayer = null;
     private Panel panel = null;
+    private int levelIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +30,12 @@ public class MainActivity extends Activity {
         Resources resources = MainActivity.this.getResources();
         Constants.MAX_LEVEL = resources.getStringArray(R.array.levels).length;
 
+        if (savedInstanceState != null) {
+            levelIndex = savedInstanceState.getInt("levelIndex", 0);
+        }
+
         try {
-            panel = new Panel(this);
+            panel = new Panel(this, levelIndex);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,7 +47,7 @@ public class MainActivity extends Activity {
         super.onResume();
         panel.setRunning(true);
 
-        loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, randomAudioResource());
+        loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, getAudioResource(levelIndex));
         loopMediaPlayer.pause();
     }
 
@@ -57,9 +61,25 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        loopMediaPlayer.release();
+        panel = null;
     }
 
-    private int randomAudioResource() {
+    @Override
+    public void onRestoreInstanceState(Bundle in) {
+        if (panel != null) {
+            panel.setLevelIndex(in.getInt("levelIndex"));
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        if (panel != null) {
+            out.putInt("levelIndex", panel.getLevelIndex());
+        }
+    }
+
+    private int getAudioResource(int levelIndex) {
         int[] resources = {
             R.raw.synth_ix2,
             R.raw.synth_iix2,
@@ -67,9 +87,8 @@ public class MainActivity extends Activity {
             R.raw.synth_ivx2
         };
 
-        double range = (double)resources.length - 1.0D;
-        int index = (int)Math.round(range * Math.random());
-        return resources[index];
+        int i = levelIndex % resources.length;
+        return resources[i];
     }
 
     public void toggleAudio() {
@@ -77,6 +96,13 @@ public class MainActivity extends Activity {
             loopMediaPlayer.pause();
         } else {
             loopMediaPlayer.start();
+        }
+    }
+
+    public void setLevelIndex(int i) {
+        levelIndex = i;
+        if (loopMediaPlayer != null) {
+            loopMediaPlayer.setResourceId(getAudioResource(i));
         }
     }
 }

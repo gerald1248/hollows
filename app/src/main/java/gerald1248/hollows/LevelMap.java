@@ -47,6 +47,7 @@ public class LevelMap {
     public LevelMap(Context context) {
         this.context = context;
 
+        //TODO: use ALPHA_8 instead
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
@@ -60,13 +61,8 @@ public class LevelMap {
         }
     }
 
-    private void clearLevelMap() {
-        //initialize charMap: '.' represents a blank tile
-        for (int i = 0; i < Constants.CHARMAP_LENGTH; i++) {
-            for (int j = 0; j < Constants.CHARMAP_LENGTH; j++) {
-                charMap[i][j] = '.';
-            }
-        }
+    public void clearTowers() {
+        towers.clear();
     }
 
     public void setLevelIndex(int levelIndex) {
@@ -177,7 +173,7 @@ public class LevelMap {
     }
 
     public void addTowerS(float cx, float cy) {
-        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/2), (int)cx, (int)cy, (float)Math.PI/2)); // 6 o'clock
+        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/1.5f), (int)cx, (int)cy, (float)Math.PI/2)); // 6 o'clock
     }
 
     public void addTowerN(float cx, float cy) {
@@ -314,5 +310,14 @@ public class LevelMap {
 
     public Point getStartPoint() {
         return startPoint;
+    }
+
+    private void clearLevelMap() {
+        //initialize charMap: '.' represents a blank tile
+        for (int i = 0; i < Constants.CHARMAP_LENGTH; i++) {
+            for (int j = 0; j < Constants.CHARMAP_LENGTH; j++) {
+                charMap[i][j] = '.';
+            }
+        }
     }
 }

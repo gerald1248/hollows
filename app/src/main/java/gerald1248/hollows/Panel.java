@@ -67,10 +67,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private HomingDevice homingDevice = null;
 
 
-    public Panel(Context context) throws IOException {
+    public Panel(Context context, int levelIndex) throws IOException {
         super(context);
 
         this.context = context;
+        this.levelIndex = levelIndex;
 
         getHolder().addCallback(this);
 
@@ -132,6 +133,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void reset(boolean advance) {
         impulse.clear();
+        lasers.clear();
+        enemyLasers.clear();
+        levelMap.clearTowers();
+
         if (advance) {
             //which level next?
             levelIndex++;
@@ -139,6 +144,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 //TODO: success animation
                 levelIndex = 0;
             }
+            MainActivity mainActivity = (MainActivity) context;
+            mainActivity.setLevelIndex(levelIndex);
         }
         player.explode(false);
         player.escape(false);
@@ -570,5 +577,15 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         canvas.restore();
+    }
+
+    public int getLevelIndex() {
+        return levelIndex;
+    }
+
+    public void setLevelIndex(int i) {
+        levelIndex = i;
+        MainActivity activity = (MainActivity) context;
+        activity.setLevelIndex(i);
     }
 }
