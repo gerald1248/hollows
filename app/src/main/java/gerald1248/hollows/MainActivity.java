@@ -81,10 +81,11 @@ public class MainActivity extends Activity {
 
     private int getAudioResource(int levelIndex) {
         int[] resources = {
-            R.raw.synth_ix2,
-            R.raw.synth_iix2,
-            R.raw.synth_iiix2,
-            R.raw.synth_ivx2
+                R.raw.synth_i,
+                R.raw.synth_ii,
+                R.raw.synth_iii,
+                R.raw.synth_iv,
+                R.raw.synth_v
         };
 
         int i = levelIndex % resources.length;
