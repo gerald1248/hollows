@@ -47,6 +47,9 @@ public class AudioOrb extends QualifiedShape implements Orb {
     }
 
     @Override
+    public String getAlertText() { return ""; }
+
+    @Override
     public String[] getInfoLines() {
         Resources r = context.getResources();
         return new String[]{};

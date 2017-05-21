@@ -1,19 +1,25 @@
 package gerald1248.hollows;
 
 import android.app.Activity;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Window;
 import android.view.WindowManager;
 
 import java.io.IOException;
+import java.util.Locale;
+
+import static android.R.attr.typeface;
 
 public class MainActivity extends Activity {
 
     private LoopMediaPlayer loopMediaPlayer = null;
     private Panel panel = null;
     private int levelIndex = 0;
+    private Typeface typeface = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +40,17 @@ public class MainActivity extends Activity {
             levelIndex = savedInstanceState.getInt("levelIndex", 0);
         }
 
+        //set panel font
+        AssetManager am = this.getApplicationContext().getAssets();
+        typeface = Typeface.createFromAsset(am, "fonts/PressStart2P.ttf");
+
         try {
-            panel = new Panel(this, levelIndex);
+            panel = new Panel(this, levelIndex, typeface);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
         setContentView(panel);
     }
 

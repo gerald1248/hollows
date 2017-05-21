@@ -12,5 +12,6 @@ public interface Orb {
     public void onLand(); //TODO: necessary?
     public void onFire();
     public String getBannerText();
+    public String getAlertText();
     public String[] getInfoLines();
 }

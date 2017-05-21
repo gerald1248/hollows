@@ -3,19 +3,22 @@ package gerald1248.hollows;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 /**
  * text drawing boilerplate
  */
 
 public class TextUtils {
-    static void draw(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color) {
+    static void draw(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color, Typeface typeface) {
         canvas.save();
         Paint p = new Paint();
         Rect r = new Rect();
         p.setColor(color);
         p.setTextAlign(align);
         p.setTextSize(size);
+        p.setAntiAlias(true);
+        p.setTypeface(typeface);
 
         //vertical centering
         if (align == Paint.Align.CENTER) {
@@ -25,5 +28,4 @@ public class TextUtils {
         canvas.drawText(text, x, y, p);
         canvas.restore();
     }
-
 }

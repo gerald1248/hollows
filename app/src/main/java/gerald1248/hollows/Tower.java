@@ -37,6 +37,9 @@ public class Tower extends QualifiedShape implements Orb {
     }
 
     @Override
+    public String getAlertText() { return ""; }
+
+    @Override
     public String[] getInfoLines() {
         return new String[0];
     }

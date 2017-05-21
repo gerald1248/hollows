@@ -34,6 +34,9 @@ public class GenericOrb extends QualifiedShape implements Orb {
     }
 
     @Override
+    public String getAlertText() { return ""; }
+
+    @Override
     public String[] getInfoLines() {
         return new String[]{};
     }

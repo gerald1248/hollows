@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.support.v4.view.MotionEventCompat;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -34,6 +35,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     private Player player;
     private LevelMap levelMap;
+    private Typeface typeface;
 
     public ImpulseScene impulse;
     public Body body;
@@ -67,7 +69,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private HomingDevice homingDevice = null;
 
 
-    public Panel(Context context, int levelIndex) throws IOException {
+    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException {
         super(context);
 
         this.context = context;
@@ -562,17 +564,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         String s = String.format("%03d", targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
+        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color, typeface);
 
         s = String.format("Level %03d", levelIndex + 1);
         color = Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
+        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color, typeface);
 
-        TextUtils.draw(canvas, bannerText, 96.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color);
+        TextUtils.draw(canvas, bannerText, 96.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, 48.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.75f + yOffset, Paint.Align.CENTER, color);
+            TextUtils.draw(canvas, line, 48.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.75f + yOffset, Paint.Align.CENTER, color, typeface);
             yOffset += 56.0f;
         }
 
