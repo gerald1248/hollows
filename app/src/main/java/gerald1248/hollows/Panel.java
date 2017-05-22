@@ -74,6 +74,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         this.context = context;
         this.levelIndex = levelIndex;
+        this.typeface = typeface;
 
         getHolder().addCallback(this);
 
@@ -82,7 +83,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
-        levelMap = new LevelMap(context);
+        levelMap = new LevelMap(context, typeface);
         levelMap.initStaticShapes(impulse);
 
         startPoint = levelMap.getStartPoint();
@@ -128,7 +129,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void setRunning(boolean b) {
         thread.setRunning(b);
-        if (b && thread.isInterrupted()) {
+        if (b && (thread.isInterrupted())) {
             thread.start();
         }
     }
@@ -562,20 +563,20 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     void updateInfo(Canvas canvas) {
         canvas.save();
 
-        String s = String.format("%03d", targetsRemaining);
+        String s = String.format("Rescued %03d", 100 - targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color, typeface);
+        TextUtils.draw(canvas, s, 32.0f, Constants.SCREEN_WIDTH - 12.0f, 32.0f, Paint.Align.RIGHT, color, typeface);
 
         s = String.format("Level %03d", levelIndex + 1);
         color = Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color, typeface);
+        TextUtils.draw(canvas, s, 32.0f, 12.0f, 32.0f, Paint.Align.LEFT, color, typeface);
 
-        TextUtils.draw(canvas, bannerText, 96.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface);
+        TextUtils.draw(canvas, bannerText, 64.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, 48.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.75f + yOffset, Paint.Align.CENTER, color, typeface);
-            yOffset += 56.0f;
+            TextUtils.draw(canvas, line, 32.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.70f + yOffset, Paint.Align.CENTER, color, typeface);
+            yOffset += 48.0f;
         }
 
         canvas.restore();

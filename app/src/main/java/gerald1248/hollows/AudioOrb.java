@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 
 import org.magnos.impulse.Circle;
 
@@ -18,10 +19,12 @@ import static gerald1248.hollows.R.string.audio_banner;
 
 public class AudioOrb extends QualifiedShape implements Orb {
     private Context context = null;
+    private Typeface typeface;
 
-    public AudioOrb(Context context, float r, int x, int y) {
+    public AudioOrb(Context context, float r, int x, int y, Typeface typeface) {
         super(new Circle(r), x, y, 0.0f);
         this.context = context;
+        this.typeface = typeface;
     }
 
     @Override
@@ -29,6 +32,7 @@ public class AudioOrb extends QualifiedShape implements Orb {
         float cx = (float)this.x;
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
+        TextUtils.draw(canvas, context.getResources().getString(audio_label), 32.0f, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
     }
 
     @Override

@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
         panel.setRunning(true);
 
         loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, getAudioResource(levelIndex));
-        loopMediaPlayer.pause();
+        loopMediaPlayer.pause(); //TODO: work out if user specified audio before
     }
 
     @Override

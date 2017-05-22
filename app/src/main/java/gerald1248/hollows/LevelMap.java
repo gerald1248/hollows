@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 import java.util.LinkedList;
 
@@ -34,6 +35,7 @@ public class LevelMap {
 
     private Canvas offscreenCanvas = null;
     private Bitmap offscreenBitmap = null;
+    private Typeface typeface = null;
 
     private Context context;
 
@@ -44,8 +46,9 @@ public class LevelMap {
 
     private int levelIndex = 0;
 
-    public LevelMap(Context context) {
+    public LevelMap(Context context, Typeface typeface) {
         this.context = context;
+        this.typeface = typeface;
 
         //TODO: use ALPHA_8 instead
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
@@ -181,7 +184,7 @@ public class LevelMap {
     }
 
     public void addAudioOrb(float r, int cx, int cy) {
-        shapes.add(new AudioOrb(context, r, cx, cy));
+        shapes.add(new AudioOrb(context, r, cx, cy, typeface));
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
