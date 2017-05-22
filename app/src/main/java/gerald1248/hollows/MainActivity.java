@@ -1,6 +1,9 @@
 package gerald1248.hollows;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -26,6 +29,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        BroadcastReceiver receiver = new ScreenReceiver();
+        registerReceiver(receiver, filter);
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -56,18 +64,27 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onResume() {
-        super.onResume();
         panel.setRunning(true);
+
+        System.out.printf("MyActivity::onResume - \n");
 
         loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, getAudioResource(levelIndex));
         loopMediaPlayer.pause(); //TODO: work out if user specified audio before
+        super.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        System.out.println("MyActivity::onPause");
         panel.setRunning(false);
         loopMediaPlayer.pause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.out.println("MyActivity::onStop");
     }
 
     @Override
