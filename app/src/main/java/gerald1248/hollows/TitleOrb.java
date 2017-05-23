@@ -41,6 +41,11 @@ public class TitleOrb extends QualifiedShape implements Orb {
     }
 
     @Override
+    public String getAlertText() {
+        return "";
+    }
+
+    @Override
     public String getBannerText() {
         return context.getResources().getString(app_name);
     }

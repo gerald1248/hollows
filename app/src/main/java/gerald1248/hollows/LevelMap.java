@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 import java.util.LinkedList;
 
@@ -34,6 +35,7 @@ public class LevelMap {
 
     private Canvas offscreenCanvas = null;
     private Bitmap offscreenBitmap = null;
+    private Typeface typeface = null;
 
     private Context context;
 
@@ -44,9 +46,11 @@ public class LevelMap {
 
     private int levelIndex = 0;
 
-    public LevelMap(Context context) {
+    public LevelMap(Context context, Typeface typeface) {
         this.context = context;
+        this.typeface = typeface;
 
+        //TODO: use ALPHA_8 instead
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
@@ -60,13 +64,8 @@ public class LevelMap {
         }
     }
 
-    private void clearLevelMap() {
-        //initialize charMap: '.' represents a blank tile
-        for (int i = 0; i < Constants.CHARMAP_LENGTH; i++) {
-            for (int j = 0; j < Constants.CHARMAP_LENGTH; j++) {
-                charMap[i][j] = '.';
-            }
-        }
+    public void clearTowers() {
+        towers.clear();
     }
 
     public void setLevelIndex(int levelIndex) {
@@ -115,7 +114,7 @@ public class LevelMap {
                 // no need to update charMap - '.' is fine
             } else if (c == 'e') {
                 endPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
-                addOrb(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
+                addBaseOrb(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = c;
                 }
@@ -176,16 +175,20 @@ public class LevelMap {
         shapes.add(new TitleOrb(context, r, cx, cy));
     }
 
+    public void addAudioOrb(float r, int cx, int cy) {
+        shapes.add(new AudioOrb(context, r, cx, cy, typeface));
+    }
+
+    public void addBaseOrb(float r, int cx, int cy) {
+        shapes.add(new BaseOrb(context, r, cx, cy, typeface));
+    }
+
     public void addTowerS(float cx, float cy) {
-        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/2), (int)cx, (int)cy, (float)Math.PI/2)); // 6 o'clock
+        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/1.5f), (int)cx, (int)cy, (float)Math.PI/2)); // 6 o'clock
     }
 
     public void addTowerN(float cx, float cy) {
         towers.add(new Tower(new Circle(Constants.TILE_LENGTH/2), (int)cx, (int)cy, -(float)Math.PI/2)); // 12 o'clock
-    }
-
-    public void addAudioOrb(float r, int cx, int cy) {
-        shapes.add(new AudioOrb(context, r, cx, cy));
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
@@ -260,10 +263,6 @@ public class LevelMap {
             float xOffset = x % Constants.TILE_LENGTH;
             float yOffset = y % Constants.TILE_LENGTH;
             if (Tile.detectCollision(type, xOffset, yOffset)) {
-                /*
-                //debug collisions
-                System.out.printf("[vertex=%d] collision orient=%.2f col=%d row=%d type=%c x=%.2f y=%.2f\n", i, orient, col, row, type, xOffset, yOffset);
-                */
                 return true;
             }
         }
@@ -314,5 +313,14 @@ public class LevelMap {
 
     public Point getStartPoint() {
         return startPoint;
+    }
+
+    private void clearLevelMap() {
+        //initialize charMap: '.' represents a blank tile
+        for (int i = 0; i < Constants.CHARMAP_LENGTH; i++) {
+            for (int j = 0; j < Constants.CHARMAP_LENGTH; j++) {
+                charMap[i][j] = '.';
+            }
+        }
     }
 }

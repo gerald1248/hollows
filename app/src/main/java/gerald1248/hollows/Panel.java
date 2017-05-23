@@ -1,11 +1,13 @@
 package gerald1248.hollows;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.support.v4.view.MotionEventCompat;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -34,6 +36,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     private Player player;
     private LevelMap levelMap;
+    private Typeface typeface;
 
     public ImpulseScene impulse;
     public Body body;
@@ -67,10 +70,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private HomingDevice homingDevice = null;
 
 
-    public Panel(Context context) throws IOException {
+    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException {
         super(context);
 
         this.context = context;
+        this.levelIndex = levelIndex;
+        this.typeface = typeface;
 
         getHolder().addCallback(this);
 
@@ -79,7 +84,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
-        levelMap = new LevelMap(context);
+        levelMap = new LevelMap(context, typeface);
         levelMap.initStaticShapes(impulse);
 
         startPoint = levelMap.getStartPoint();
@@ -125,13 +130,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void setRunning(boolean b) {
         thread.setRunning(b);
-        if (b && thread.isInterrupted()) {
+        if (b && (thread.isInterrupted())) {
             thread.start();
         }
     }
 
+    public void clearMultitouchState() {
+        multitouchMap.clear();
+    }
+
     public void reset(boolean advance) {
         impulse.clear();
+        lasers.clear();
+        enemyLasers.clear();
+        levelMap.clearTowers();
+
         if (advance) {
             //which level next?
             levelIndex++;
@@ -139,6 +152,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 //TODO: success animation
                 levelIndex = 0;
             }
+            MainActivity mainActivity = (MainActivity) context;
+            mainActivity.setLevelIndex(levelIndex);
         }
         player.explode(false);
         player.escape(false);
@@ -209,15 +224,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         //TODO: move out of Panel class
-        if (frames % Constants.INTERVAL_FRAMES == 0) {
+        float x1 = body.position.x;
+        float y1 = body.position.y;
+        if (frames % Constants.TOWER_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getTowers()) {
                 Tower t = (Tower)qs;
 
                 //first check player is within detection field
                 //currently only N and S orientations are used
-
-                float x1 = body.position.x;
-                float y1 = body.position.y;
                 float x2 = t.x;
                 float y2 = t.y;
                 if (t.orient < 0.0f) {
@@ -244,6 +258,23 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 l.setObserver(body);
                 l.setVelocityFactor(0.5f);
                 enemyLasers.add(l);
+            }
+        }
+
+        //animate orbs to let the user know flying close to them has effects
+        if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
+            for (QualifiedShape qs : levelMap.getShapes()) {
+                if (qs instanceof Orb) {
+                    float x2 = qs.x;
+                    float y2 = qs.y;
+                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
+                    if (d < (qs.shape.radius + Constants.PLAYER_RADIUS) * 1.5f) {
+                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float)Math.PI, 8);
+                        w.setObserver(body);
+                        w.setVelocityFactor(0.5f);
+                        waves.add(w);
+                    }
+                }
             }
         }
     }
@@ -552,23 +583,34 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     void updateInfo(Canvas canvas) {
         canvas.save();
+        Resources r = context.getResources();
 
-        String s = String.format("%03d", targetsRemaining);
+        String s = String.format(r.getString(R.string.rescue_format), 100 - targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, Constants.SCREEN_WIDTH - 12.0f, 48.0f, Paint.Align.RIGHT, color);
+        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface);
 
-        s = String.format("Level %03d", levelIndex + 1);
+        s = String.format(r.getString(R.string.level_format), levelIndex + 1);
         color = Color.GRAY;
-        TextUtils.draw(canvas, s, 48.0f, 12.0f, 48.0f, Paint.Align.LEFT, color);
+        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface);
 
-        TextUtils.draw(canvas, bannerText, 96.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color);
+        TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, 48.0f, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.75f + yOffset, Paint.Align.CENTER, color);
-            yOffset += 56.0f;
+            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.70f + yOffset, Paint.Align.CENTER, color, typeface);
+            yOffset += Constants.FONT_SIZE_HUGE;
         }
 
         canvas.restore();
+    }
+
+    public int getLevelIndex() {
+        return levelIndex;
+    }
+
+    public void setLevelIndex(int i) {
+        levelIndex = i;
+        MainActivity activity = (MainActivity) context;
+        activity.setLevelIndex(i);
     }
 }

@@ -9,15 +9,16 @@ import android.graphics.Typeface;
 import org.magnos.impulse.Circle;
 
 /**
- * There's only one screen, so audio controls need an orb of their own
- * Also: the default must be quiet: no FX, no music, nothing
+ * The orb that houses any remaining targets
+ * The homing device points to the center of this orb
+ * There must be exactly one BaseOrb in every level
  */
 
-public class AudioOrb extends QualifiedShape implements Orb {
-    private Context context = null;
+public class BaseOrb extends QualifiedShape implements Orb {
+    private Context context;
     private Typeface typeface;
 
-    public AudioOrb(Context context, float r, int x, int y, Typeface typeface) {
+    public BaseOrb(Context context, float r, int x, int y, Typeface typeface) {
         super(new Circle(r), x, y, 0.0f);
         this.context = context;
         this.typeface = typeface;
@@ -28,12 +29,12 @@ public class AudioOrb extends QualifiedShape implements Orb {
         float cx = (float)this.x;
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
-        TextUtils.draw(canvas, context.getResources().getString(R.string.audio_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
+        TextUtils.draw(canvas, context.getResources().getString(R.string.base_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
     }
 
     @Override
     public void onFire() {
-
+        //do nothing for now
     }
 
     @Override
@@ -42,12 +43,14 @@ public class AudioOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public String getBannerText() {
-        return context.getResources().getString(R.string.audio_banner);
+    public String getAlertText() {
+        return "";
     }
 
     @Override
-    public String getAlertText() { return ""; }
+    public String getBannerText() {
+        return context.getResources().getString(R.string.base_banner);
+    }
 
     @Override
     public String[] getInfoLines() {
