@@ -20,7 +20,7 @@ import org.magnos.impulse.Shape;
 import org.magnos.impulse.Vec2;
 import org.magnos.impulse.ImpulseScene;
 
-import static android.graphics.Bitmap.Config.ARGB_8888;
+import static android.graphics.Bitmap.Config.ALPHA_8;
 import static android.graphics.Bitmap.createBitmap;
 
 /**
@@ -51,7 +51,7 @@ public class LevelMap {
         this.typeface = typeface;
 
         //TODO: use ALPHA_8 instead
-        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ARGB_8888);
+        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ALPHA_8);//ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
@@ -202,7 +202,7 @@ public class LevelMap {
 
         // copy from offscreen canvas
         Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
-        canvas.drawBitmap(offscreenBitmap, null, r, null);
+        canvas.drawBitmap(offscreenBitmap, null, r, paint);
 
         // now draw towers
         for (QualifiedShape qs : towers) {
