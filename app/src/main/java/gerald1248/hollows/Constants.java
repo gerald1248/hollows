@@ -15,9 +15,14 @@ public class Constants {
     public static int MAX_POINTER = 5;
     public static int MAX_PROJECTILES = 4;
     public static int CHARMAP_LENGTH = 50;
-    public static int INTERVAL_FRAMES = 100;
+    public static int TOWER_INTERVAL_FRAMES = 100;
+    public static int PULSE_INTERVAL_FRAMES = 60;
     public static float PLAYER_RADIUS = 50.0f;
     public static float MAX_MAP = 5000.0f;
     public static float TILE_LENGTH = 100.0f;
     public static float TOWER_RANGE = 1000.0f;
+    public static float FONT_SIZE_HUGE = 40.0f;
+    public static float FONT_SIZE_LARGE = 32.0f;
+    public static float FONT_SIZE_MEDIUM = 24.0f;
+    public static float FONT_SIZE_SMALL = 16.0f;
 }

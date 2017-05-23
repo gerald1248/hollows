@@ -66,8 +66,6 @@ public class MainActivity extends Activity {
     protected void onResume() {
         panel.setRunning(true);
 
-        System.out.printf("MyActivity::onResume - \n");
-
         loopMediaPlayer = LoopMediaPlayer.create(MainActivity.this, getAudioResource(levelIndex));
         loopMediaPlayer.pause(); //TODO: work out if user specified audio before
         super.onResume();
@@ -78,12 +76,22 @@ public class MainActivity extends Activity {
         super.onPause();
         System.out.println("MyActivity::onPause");
         panel.setRunning(false);
-        loopMediaPlayer.pause();
+        panel.clearMultitouchState();
+
+        //double lock: onPause and onStop
+        if (loopMediaPlayer.isPlaying()) {
+            loopMediaPlayer.pause();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
+        //double lock: onPause and onStop
+        if (loopMediaPlayer.isPlaying()) {
+            loopMediaPlayer.pause();
+        }
         System.out.println("MyActivity::onStop");
     }
 

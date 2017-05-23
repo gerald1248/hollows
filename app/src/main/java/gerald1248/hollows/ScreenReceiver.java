@@ -20,10 +20,8 @@ public class ScreenReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             state = ScreenBroadcast.Off;
-            System.out.println("ACTION_SCREEN_OFF");
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
             state = ScreenBroadcast.On;
-            System.out.println("ACTION_SCREEN_ON");
         } else {
             state = ScreenBroadcast.None;
         }
