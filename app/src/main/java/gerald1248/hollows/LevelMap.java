@@ -87,6 +87,7 @@ public class LevelMap {
         int row = 0, col = 0;
         String level = levels[levelIndex].trim();
         int len = level.length();
+        float half = Constants.TILE_LENGTH/2;
         for (int i = 0; i < len; i++) {
             char c = level.charAt(i);
             if (Character.isWhitespace(c)) {
@@ -95,25 +96,25 @@ public class LevelMap {
                 continue;
             } else if (Character.isDigit(c)) {
                 int d = Character.getNumericValue(c);
-                addOrb(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                addOrb(Constants.TILE_LENGTH / 2.0f * (float) d, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 't') {
-                addTitleOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                addTitleOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'a') {
-                addAudioOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH), Math.round((float) row * Constants.TILE_LENGTH));
+                addAudioOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 's') {
-                startPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
+                startPoint = new Point(col * (int) Constants.TILE_LENGTH + (int) half, row * (int) Constants.TILE_LENGTH + (int) half);
                 // no need to update charMap - '.' is fine
             } else if (c == 'e') {
-                endPoint = new Point(col * (int) Constants.TILE_LENGTH, row * (int) Constants.TILE_LENGTH);
+                endPoint = new Point(col * (int) Constants.TILE_LENGTH + (int) half, row * (int) Constants.TILE_LENGTH + (int) half);
                 addBaseOrb(Constants.TILE_LENGTH, endPoint.x, endPoint.y);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = c;

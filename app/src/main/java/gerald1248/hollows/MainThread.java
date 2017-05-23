@@ -12,7 +12,6 @@ public class MainThread extends Thread {
     private SurfaceHolder surfaceHolder;
     private Panel panel;
     private boolean running;
-    private boolean audio = false; // audio state
     public static Canvas canvas;
 
     public void setRunning(boolean running) {

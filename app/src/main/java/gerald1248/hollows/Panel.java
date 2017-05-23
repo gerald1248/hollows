@@ -264,7 +264,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //animate orbs to let the user know flying close to them has effects
         if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof Orb) {
+                if (qs instanceof TitleOrb || qs instanceof AudioOrb || qs instanceof BaseOrb) {
                     float x2 = qs.x;
                     float y2 = qs.y;
                     float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
@@ -344,8 +344,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     float delta = mts.x2 - mts.x1;
 
                     // switch to move even when currently in state Thrust
-                    // but, require strong movement
-                    // TODO: fine-tune values across devices
+                    // but require strong movement
                     float minDelta = (mts.state == MultitouchState.Motion.Thrust) ? 10.0F : 2.0F;
                     if (Math.abs(delta) >= minDelta) {
                         player.move(event, delta);
@@ -503,11 +502,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
             if (d < 3.0f * Constants.PLAYER_RADIUS) {
-                targetsRemaining--;
+                targetsRemaining -= 2;
                 body.mass = body.mass * 1.05f;
-            }
-            if (targetsRemaining == 99 || (targetsRemaining % 10) == 0) {
-                //TODO: play bell sound?
             }
         }
 
@@ -597,7 +593,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.70f + yOffset, Paint.Align.CENTER, color, typeface);
+            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface);
             yOffset += Constants.FONT_SIZE_HUGE;
         }
 
