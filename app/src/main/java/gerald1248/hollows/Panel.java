@@ -84,7 +84,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
 
-        levelMap = new LevelMap(context, typeface);
+        levelMap = new LevelMap(context, typeface, levelIndex);
         levelMap.initStaticShapes(impulse);
 
         startPoint = levelMap.getStartPoint();
@@ -111,6 +111,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         body.setOrient((float)-Math.PI/2);
         initBodyPhysics(body);
 
+        //currently mass does not change as the physics don't change
+        //in a convincing way
         if (initialBodyMass < -0.0f) {
             initialBodyMass = body.mass;
         } else {
@@ -369,6 +371,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
                     Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
+                    l.setVelocityFactor(0.75f);
                     lasers.add(l);
 
                     if (lasers.size() > Constants.MAX_PROJECTILES) {
@@ -503,7 +506,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
             if (d < 3.0f * Constants.PLAYER_RADIUS) {
                 targetsRemaining -= 2;
-                body.mass = body.mass * 1.05f;
             }
         }
 
@@ -534,7 +536,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
-        starfield.draw(canvas);
+        starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         player.draw(canvas);
 

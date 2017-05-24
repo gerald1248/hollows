@@ -46,12 +46,13 @@ public class LevelMap {
 
     private int levelIndex = 0;
 
-    public LevelMap(Context context, Typeface typeface) {
+    public LevelMap(Context context, Typeface typeface, int levelIndex) {
         this.context = context;
         this.typeface = typeface;
+        this.levelIndex = levelIndex;
 
         //TODO: use ALPHA_8 instead
-        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ALPHA_8);//ARGB_8888);
+        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ALPHA_8);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
