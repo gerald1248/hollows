@@ -112,12 +112,12 @@ public class LevelMap {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'n') {
-                addNextLevelOrb(Constants.TILE_LENGTH * 0.75f, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                addNextLevelOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'p') {
-                addPreviousLevelOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                addPreviousLevelOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }

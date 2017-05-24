@@ -7,9 +7,9 @@
     <string name="audio_banner">Toggle audio</string>
     <string name="base_label">SOS</string>
     <string name="base_banner">Help!</string>
-    <string name="next_level_label">Next</string>
+    <string name="next_level_label">+1</string>
     <string name="next_level_banner">Skip level</string>
-    <string name="previous_level_label">Previous</string>
+    <string name="previous_level_label">-1</string>
     <string name="previous_level_banner">Back one level</string>
     <string name="level_format">Level %03d</string>
     <string name="rescue_format">Rescued %03d</string>
