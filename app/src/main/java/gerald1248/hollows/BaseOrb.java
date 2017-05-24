@@ -29,7 +29,8 @@ public class BaseOrb extends QualifiedShape implements Orb {
         float cx = (float)this.x;
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
-        TextUtils.draw(canvas, context.getResources().getString(R.string.base_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
+
+        TextUtils.draw(canvas, context.getResources().getString(R.string.base_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
     }
 
     @Override

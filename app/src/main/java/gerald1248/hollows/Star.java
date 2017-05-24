@@ -8,9 +8,9 @@ import android.graphics.Paint;
  */
 
 public class Star {
-    public Star(boolean maj) {
-        cx = (float)Math.random() * Constants.SCREEN_WIDTH;
-        cy = (float)Math.random() * Constants.SCREEN_HEIGHT;
+    public Star(boolean maj, float side) {
+        cx = (float)Math.random() * side;
+        cy = (float)Math.random() * side;
         r = 0.5f + (float)Math.random();
 
         if (maj) {
@@ -25,8 +25,6 @@ public class Star {
     private float cx;
     private float cy;
     private float r;
-
-
 
     void draw(Canvas canvas, Paint paint) {
         canvas.drawCircle(cx, cy, r, paint);

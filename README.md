@@ -3,7 +3,17 @@ Hollows
 
 <img src="screenshots/screenshot.png" height="400" alt="Hollows screenshot"/>
 
-Hollows is an arcade game in the style of the 1980s that:
+`Hollows` is an arcade game in the style of the 80s. Your task is to rescue settlers from a sequence of caves known as the Hollows.
+
+Gameplay is optimized for public transport and open spaces:
+
+* startup time is short
+* no data connection required
+* battery use is moderate
+* levels are brief
+* contrast is high for open air use
+
+In terms of UI, `Hollows` breaks with arcade conventions in that it
 
 * doesn't use buttons
 * supports multitouch
@@ -26,13 +36,17 @@ The original offers five keyboard commands:
 * long press: thrust
 * short press: fire
 
-The 'shield' interaction of the original is missing. It has been replaced with a proximity trigger (for 'pick up') and an untimely demise (for 'protect').
+The 'shield' interaction of the original is missing. It has been replaced with a proximity trigger (for 'pick up'), but the 'protect' aspect has been dropped.
 
-While it is possible to use the interface without multitouch, it is much easier to use one finger for rotation and another to apply thrust. For increased thrust, place two or more fingers on the screen.
+While it is possible to play `Hollows` without multitouch, it is much easier to use one finger for rotation and another to apply thrust. For increased thrust, place two or more fingers on the screen.
 
 ![Touch controls](plantuml/ui.png?raw=true "Touch controls")
 
 Sadly there is no Rob Hubbard title music.
+
+Make and share your own levels
+------------------------------
+`Hollows` levels are ASCII art in a simple 50&times;50 grid. If you've created a new level, please consider sharing it by submitting a pull request. Take a look at the [existing levels](app/src/main/res/values/levels.xml).
 
 Acknowledgements
 ----------------

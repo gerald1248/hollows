@@ -2,6 +2,8 @@ package gerald1248.hollows;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
@@ -10,11 +12,18 @@ import android.graphics.Typeface;
  */
 
 public class TextUtils {
-    static void draw(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color, Typeface typeface) {
+    static void draw(Canvas canvas, String text, float size, float x, float y, Paint.Align align, int color, Typeface typeface, boolean clear) {
         canvas.save();
         Paint p = new Paint();
         Rect r = new Rect();
-        p.setColor(color);
+
+        if (clear == false) {
+            p.setColor(color);
+        } else {
+            p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        }
+
+
         p.setTextAlign(align);
         p.setTextSize(size);
         p.setAntiAlias(true);
