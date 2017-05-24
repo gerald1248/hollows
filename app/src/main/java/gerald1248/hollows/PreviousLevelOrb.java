@@ -9,15 +9,14 @@ import android.graphics.Typeface;
 import org.magnos.impulse.Circle;
 
 /**
- * There's only one screen, so audio controls need an orb of their own
- * Also: the default must be quiet: no FX, no music, nothing
+ * The partner class to NextLevelOrb, this one lets the player skip back one level
  */
 
-public class AudioOrb extends QualifiedShape implements Orb {
+public class PreviousLevelOrb extends QualifiedShape implements Orb {
     private Context context = null;
     private Typeface typeface;
 
-    public AudioOrb(Context context, float r, int x, int y, Typeface typeface) {
+    public PreviousLevelOrb(Context context, float r, int x, int y, Typeface typeface) {
         super(new Circle(r), x, y, 0.0f);
         this.context = context;
         this.typeface = typeface;
@@ -28,7 +27,7 @@ public class AudioOrb extends QualifiedShape implements Orb {
         float cx = (float)this.x;
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
-        TextUtils.draw(canvas, context.getResources().getString(R.string.audio_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
+        TextUtils.draw(canvas, context.getResources().getString(R.string.previous_level_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
     }
 
     @Override
@@ -43,7 +42,7 @@ public class AudioOrb extends QualifiedShape implements Orb {
 
     @Override
     public String getBannerText() {
-        return context.getResources().getString(R.string.audio_banner);
+        return context.getResources().getString(R.string.previous_level_banner);
     }
 
     @Override

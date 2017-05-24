@@ -15,6 +15,8 @@ import android.view.WindowManager;
 
 import java.io.IOException;
 
+import static gerald1248.hollows.MainThread.canvas;
+
 public class MainActivity extends Activity {
 
     private LoopMediaPlayer loopMediaPlayer = null;
@@ -62,21 +64,22 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-
         setContentView(panel);
     }
 
     @Override
     protected void onResume() {
+        super.onResume();
         readPreferences();
-
-        panel.setRunning(true);
 
         if (playAudio == true) {
             loopMediaPlayer.start();
         }
-        super.onResume();
+
+        panel.showPauseScreen();
+
     }
+
 
     @Override
     protected void onPause() {
@@ -164,4 +167,10 @@ public class MainActivity extends Activity {
             loopMediaPlayer.setResourceId(getAudioResource(i));
         }
     }
+
+    public Panel getPanel() {
+        return panel;
+    }
+
+    public int getHighestLevelIndex() { return highestLevelIndex; }
 }

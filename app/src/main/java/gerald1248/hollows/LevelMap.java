@@ -111,6 +111,16 @@ public class LevelMap {
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
+            } else if (c == 'n') {
+                addNextLevelOrb(Constants.TILE_LENGTH * 0.75f, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
+                    charMap[row][col] = '.';
+                }
+            } else if (c == 'p') {
+                addPreviousLevelOrb(Constants.TILE_LENGTH, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
+                    charMap[row][col] = '.';
+                }
             } else if (c == 's') {
                 startPoint = new Point(col * (int) Constants.TILE_LENGTH + (int) half, row * (int) Constants.TILE_LENGTH + (int) half);
                 // no need to update charMap - '.' is fine
@@ -159,8 +169,6 @@ public class LevelMap {
         return towers;
     }
 
-
-
     public void addPolygon(Vec2[] v, int x, int y, float orient) {
         shapes.add(new QualifiedShape(new Polygon(v), x, y, orient));
     }
@@ -179,6 +187,14 @@ public class LevelMap {
 
     public void addAudioOrb(float r, int cx, int cy) {
         shapes.add(new AudioOrb(context, r, cx, cy, typeface));
+    }
+
+    public void addNextLevelOrb(float r, int cx, int cy) {
+        shapes.add(new NextLevelOrb(context, r, cx, cy, typeface));
+    }
+
+    public void addPreviousLevelOrb(float r, int cx, int cy) {
+        shapes.add(new PreviousLevelOrb(context, r, cx, cy, typeface));
     }
 
     public void addBaseOrb(float r, int cx, int cy) {
