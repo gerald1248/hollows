@@ -23,7 +23,6 @@ public class TextUtils {
             p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
 
-
         p.setTextAlign(align);
         p.setTextSize(size);
         p.setAntiAlias(true);

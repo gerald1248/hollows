@@ -6,7 +6,14 @@
     <string name="audio_label">Audio</string>
     <string name="audio_banner">Toggle audio</string>
     <string name="base_label">SOS</string>
-    <string name="base_banner">Rescue settlers</string>
+    <string name="base_banner">Help!</string>
+    <string name="next_level_label">Next</string>
+    <string name="next_level_banner">Skip level</string>
+    <string name="previous_level_label">Previous</string>
+    <string name="previous_level_banner">Back one level</string>
     <string name="level_format">Level %03d</string>
     <string name="rescue_format">Rescued %03d</string>
+    <string name="unlock_alert">Unlock level first</string>
+    <string name="completion_alert">Right on Commander!</string>
+    <string name="paused_banner">Paused</string>
 </resources>

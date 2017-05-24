@@ -32,14 +32,20 @@ import org.magnos.impulse.Vec2;
  */
 
 public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameObject {
-    private MainThread thread;
+    public ImpulseScene impulse = null;
+    public Body body = null;
+    public enum PanelState {
+        Paused, Running
+    }
 
-    private Player player;
-    private LevelMap levelMap;
-    private Typeface typeface;
-
-    public ImpulseScene impulse;
-    public Body body;
+    private MainThread thread = null;
+    private Player player = null;
+    private LevelMap levelMap = null;
+    private Typeface typeface = null;
+    private Point startPoint = null;
+    private Point endPoint = null;
+    private Context context = null;
+    private HomingDevice homingDevice = null;
 
     private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
     private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
@@ -56,19 +62,15 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     private int levelIndex = 0;
     private int frames = 0;
-
-    private Point startPoint = null; // not yet used
-    private Point endPoint = null;
+    private int alertFrames = 0;
 
     private float initialBodyMass = -1.0f;
 
     private String bannerText;
+    private String alertText;
     private String[] infoLines;
 
-    private Context context;
-
-    private HomingDevice homingDevice = null;
-
+    private PanelState state;
 
     public Panel(Context context, int levelIndex, Typeface typeface) throws IOException {
         super(context);
@@ -77,9 +79,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         this.levelIndex = levelIndex;
         this.typeface = typeface;
 
-        getHolder().addCallback(this);
+        state = PanelState.Running; //this is the default - pause is the exception
 
-        thread = new MainThread(getHolder(), this);
+        getHolder().addCallback(this);
 
         //2D scene
         impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
@@ -132,7 +134,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     public void setRunning(boolean b) {
         thread.setRunning(b);
-        if (b && (thread.isInterrupted())) {
+        if (b == true && (thread.isInterrupted())) {
             thread.start();
         }
     }
@@ -148,13 +150,19 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         levelMap.clearTowers();
 
         if (advance) {
+            MainActivity mainActivity = (MainActivity) context;
             //which level next?
             levelIndex++;
             if (levelIndex >= Constants.MAX_LEVEL) {
-                //TODO: success animation
+                //call mainActivity so highestLevelIndex is set
+                mainActivity.setLevelIndex(levelIndex);
+
+                //mark the game as complete
+                setCompletionAlert();
+
+                //then start over
                 levelIndex = 0;
             }
-            MainActivity mainActivity = (MainActivity) context;
             mainActivity.setLevelIndex(levelIndex);
         }
         player.explode(false);
@@ -176,6 +184,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     // tick() is called from main loop when ready to draw frame
     // determines state of motion events
     public void tick() {
+        if (state == PanelState.Paused) {
+            return;
+        }
+
         frames++;
 
         // potential race condition, so use ConcurrentHashMap
@@ -266,7 +278,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //animate orbs to let the user know flying close to them has effects
         if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof TitleOrb || qs instanceof AudioOrb || qs instanceof BaseOrb) {
+                if (qs instanceof TitleOrb || qs instanceof BaseOrb) {
                     float x2 = qs.x;
                     float y2 = qs.y;
                     float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
@@ -288,7 +300,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        thread = new MainThread(getHolder(), this);
+        thread = new MainThread(holder, this);
 
         thread.setRunning(true);
         thread.start();
@@ -310,6 +322,16 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        //handle pause screen
+        if (state == PanelState.Paused) {
+            bannerText = "";
+            state = PanelState.Running;
+
+            thread.setRunning(true);
+
+            return true;
+        }
+
         int action = MotionEventCompat.getActionMasked(event);
         int pointerIndex = MotionEventCompat.getActionIndex(event);
 
@@ -390,6 +412,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void update() {
+        if (state == PanelState.Paused) {
+            return;
+        }
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
@@ -447,11 +472,30 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 detonate();
 
                 Orb o = (Orb)qs;
-                if (o instanceof AudioOrb) {
+                if (o instanceof Tower) {
+                    levelMap.removeTower((Tower)o);
+                } else if (o instanceof AudioOrb) {
                     MainActivity mainActivity = (MainActivity)context;
                     mainActivity.toggleAudio();
-                } else if (o instanceof Tower) {
-                    levelMap.removeTower((Tower)o);
+                } else if (o instanceof NextLevelOrb) {
+                    MainActivity mainActivity = (MainActivity)context;
+                    int highestLevelIndex = mainActivity.getHighestLevelIndex();
+                    if (highestLevelIndex > levelIndex) {
+                        player.escape(true);
+                        waves.clear();
+                        reset(true);
+                    } else {
+                        setUnlockAlert();
+                    }
+                } else if (o instanceof PreviousLevelOrb) {
+                    if (levelIndex > 0) {
+                        setLevelIndex(levelIndex - 1);
+                        player.escape(true);
+                        waves.clear();
+                        reset(false);
+                    } else {
+                        setUnlockAlert();
+                    }
                 }
             }
         }
@@ -512,7 +556,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //TODO: add charMap test that ensures space between orbs
         //add 0.5r tolerance to avoid flicker
         Orb o = (Orb)levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
-        if (o == null) {
+        if (state == PanelState.Paused) {
+            // do nothing; bannerText has been set
+        } else if (o == null && state != PanelState.Paused) {
             bannerText = "";
             infoLines = new String[]{};
         } else {
@@ -539,6 +585,19 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         player.draw(canvas);
+
+        // display targets remaining
+        updateInfo(canvas);
+
+        // update homing device - angle to endPoint
+        float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
+        homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
+        homingDevice.draw(canvas);
+
+        //don't animate lasers etc., so exit here if the panel has been paused
+        if (state == PanelState.Paused) {
+            return;
+        }
 
         Iterator<Wave> it = waves.iterator();
         while (it.hasNext()) {
@@ -569,14 +628,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 l.draw(canvas);
             }
         }
-
-        // display targets remaining
-        updateInfo(canvas);
-
-        // update homing device - angle to endPoint
-        float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
-        homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
-        homingDevice.draw(canvas);
     }
 
     void updateInfo(Canvas canvas) {
@@ -599,6 +650,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             yOffset += Constants.FONT_SIZE_HUGE;
         }
 
+        if (alertFrames > 0) {
+            TextUtils.draw(canvas, alertText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
+            alertFrames--;
+        }
+
         canvas.restore();
     }
 
@@ -610,5 +666,32 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         levelIndex = i;
         MainActivity activity = (MainActivity) context;
         activity.setLevelIndex(i);
+    }
+
+    public void showPauseScreen() {
+        //don't show pause screen at startup
+        if (thread == null || thread.canvas == null) {
+            return;
+        }
+        thread.setRunning(true);
+        state = PanelState.Paused;
+
+        Resources r = context.getResources();
+        bannerText = r.getString(R.string.paused_banner);
+    }
+
+    private void setUnlockAlert() {
+        Resources r = context.getResources();
+        setAlert(r.getString(R.string.unlock_alert));
+    }
+
+    private void setCompletionAlert() {
+        Resources r = context.getResources();
+        setAlert(r.getString(R.string.completion_alert));
+    }
+
+    private void setAlert(String s) {
+        alertText = s;
+        alertFrames = Constants.ALERT_FRAMES;
     }
 }

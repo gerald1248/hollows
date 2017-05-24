@@ -17,6 +17,7 @@ public class Constants {
     public static int CHARMAP_LENGTH = 50;
     public static int TOWER_INTERVAL_FRAMES = 100;
     public static int PULSE_INTERVAL_FRAMES = 120;
+    public static int ALERT_FRAMES = 90;
     public static float PLAYER_RADIUS = 50.0f;
     public static float MAX_MAP = 5000.0f;
     public static float TILE_LENGTH = 100.0f;

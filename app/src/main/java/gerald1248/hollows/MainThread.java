@@ -9,10 +9,11 @@ import android.view.SurfaceHolder;
  */
 
 public class MainThread extends Thread {
+    public static Canvas canvas;
+
     private SurfaceHolder surfaceHolder;
     private Panel panel;
     private boolean running;
-    public static Canvas canvas;
 
     public void setRunning(boolean running) {
         this.running = running;
@@ -38,8 +39,8 @@ public class MainThread extends Thread {
             try {
                 canvas = this.surfaceHolder.lockCanvas();
                 synchronized (surfaceHolder) {
-                    this.panel.update();
-                    this.panel.draw(canvas);
+                    panel.update();
+                    panel.draw(canvas);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

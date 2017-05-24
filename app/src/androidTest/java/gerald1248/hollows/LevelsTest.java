@@ -50,7 +50,7 @@ public class LevelsTest {
 
     public void validTiles(String[] lines) {
         for (String line : lines) {
-            Pattern p = Pattern.compile("^[\\.|/+^v\u00b4`seat1-9mw]{50}$");
+            Pattern p = Pattern.compile("^[\\.|/+^v\u00b4`seatpn1-9mw]{50}$");
             Matcher m = p.matcher(line);
             boolean b = m.matches();
             assertThat(b, is(true));
