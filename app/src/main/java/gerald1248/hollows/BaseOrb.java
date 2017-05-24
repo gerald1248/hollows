@@ -2,6 +2,7 @@ package gerald1248.hollows;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 
@@ -29,8 +30,7 @@ public class BaseOrb extends QualifiedShape implements Orb {
         float cy = (float)this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
 
-        //skip label as canvas is ALPHA_8
-        //TextUtils.draw(canvas, context.getResources().getString(R.string.base_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
+        TextUtils.draw(canvas, context.getResources().getString(R.string.base_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
     }
 
     @Override

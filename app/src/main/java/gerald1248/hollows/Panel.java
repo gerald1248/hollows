@@ -585,17 +585,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         String s = String.format(r.getString(R.string.rescue_format), 100 - targetsRemaining);
         int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface);
+        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface, false);
 
         s = String.format(r.getString(R.string.level_format), levelIndex + 1);
         color = Color.GRAY;
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface);
+        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface, false);
 
-        TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface);
+        TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface);
+            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
             yOffset += Constants.FONT_SIZE_HUGE;
         }
 

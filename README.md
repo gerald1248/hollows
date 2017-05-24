@@ -3,14 +3,17 @@ Hollows
 
 <img src="screenshots/screenshot.png" height="400" alt="Hollows screenshot"/>
 
-`Hollows` is an arcade game in the style of the 80s that&rsquo;s optimized for public transport:
+`Hollows` is an arcade game in the style of the 80s. Your task is to rescue settlers from a sequence of caves known as the Hollows.
+
+Gameplay is optimized for public transport and open spaces:
 
 * startup time is short
 * no data connection required
 * battery use is moderate
 * levels are brief
+* contrast is high for open air use
 
-In terms of UI, `Hollows`
+In terms of UI, `Hollows` breaks with arcade conventions in that it
 
 * doesn't use buttons
 * supports multitouch

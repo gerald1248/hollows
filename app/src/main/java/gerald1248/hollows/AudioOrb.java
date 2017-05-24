@@ -30,7 +30,7 @@ public class AudioOrb extends QualifiedShape implements Orb {
         canvas.drawCircle(cx, cy, shape.radius, paint);
 
         //can't draw text over shape as canvas is ALPHA_8
-        //TextUtils.draw(canvas, context.getResources().getString(R.string.audio_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.BLACK, typeface);
+        TextUtils.draw(canvas, context.getResources().getString(R.string.audio_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
     }
 
     @Override

@@ -16,7 +16,7 @@ import static android.graphics.Bitmap.createBitmap;
 public class Starfield {
     private Bitmap bitmap = null;
     private Canvas canvas = null;
-    private Star[] stars = new Star[64];
+    private Star[] stars = new Star[128];
     private float side = Constants.MAX_MAP/2; //parallax effect: double foreground speed
 
     public Starfield() {
