@@ -18,7 +18,7 @@ public class Tower extends QualifiedShape implements Orb {
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
-
+        //don't draw here as it may explode
     }
 
     @Override

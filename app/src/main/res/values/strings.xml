@@ -14,6 +14,9 @@
     <string name="level_format">Level %03d</string>
     <string name="rescue_format">Rescued %03d</string>
     <string name="unlock_alert">Unlock level first</string>
+    <string name="ready_alert">Time to go</string>
     <string name="completion_alert">Right on Commander!</string>
     <string name="paused_banner">Paused</string>
+    <string name="audio_on">Audio on</string>
+    <string name="audio_off">Audio off</string>
 </resources>

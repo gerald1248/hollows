@@ -133,6 +133,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void setRunning(boolean b) {
+        //safety catch
+        if (thread == null) {
+            //if !b, no need to allocate thread
+            //TODO: if b, consider allocating new thread
+            return;
+        }
         thread.setRunning(b);
         if (b == true && (thread.isInterrupted())) {
             thread.start();
@@ -148,6 +154,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         lasers.clear();
         enemyLasers.clear();
         levelMap.clearTowers();
+        targetsRemaining = initialTargetsRemaining;
+
 
         if (advance) {
             MainActivity mainActivity = (MainActivity) context;
@@ -275,10 +283,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             }
         }
 
-        //animate orbs to let the user know flying close to them has effects
+        //animate orbs to let the user know flying close to them has an effect
         if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof TitleOrb || qs instanceof BaseOrb) {
+                if (qs instanceof TitleOrb || qs instanceof BaseOrb || qs instanceof AudioOrb) {
                     float x2 = qs.x;
                     float y2 = qs.y;
                     float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
@@ -327,7 +335,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             bannerText = "";
             state = PanelState.Running;
 
-            thread.setRunning(true);
+            if (thread != null) {
+                thread.setRunning(true);
+            }
 
             return true;
         }
@@ -433,7 +443,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         if (levelMap.detectCollision(v.x, v.y, Constants.PLAYER_RADIUS, player.orient)) {
             body.setStatic();
             player.explode(true);
-            targetsRemaining = 100;
+            targetsRemaining = initialTargetsRemaining;
             detonate();
         }
 
@@ -455,12 +465,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float y = l.y;
             float r = l.r;
             float orient = l.orient;
-            if (levelMap.detectCollision(x, y, r, orient)) {
-                laserIt.remove();
-                continue;
-            }
 
-            // 2D bodies
+            //important: need to check for 2D collisions first
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
             if (qs != null) {
                 laserIt.remove();
@@ -474,9 +480,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 Orb o = (Orb)qs;
                 if (o instanceof Tower) {
                     levelMap.removeTower((Tower)o);
+                    continue;
                 } else if (o instanceof AudioOrb) {
                     MainActivity mainActivity = (MainActivity)context;
                     mainActivity.toggleAudio();
+                    setAudioAlert(mainActivity.getPlayAudio());
+                    continue;
                 } else if (o instanceof NextLevelOrb) {
                     MainActivity mainActivity = (MainActivity)context;
                     int highestLevelIndex = mainActivity.getHighestLevelIndex();
@@ -487,6 +496,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     } else {
                         setUnlockAlert();
                     }
+                    continue;
                 } else if (o instanceof PreviousLevelOrb) {
                     if (levelIndex > 0) {
                         setLevelIndex(levelIndex - 1);
@@ -496,7 +506,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     } else {
                         setUnlockAlert();
                     }
+                    continue;
                 }
+            }
+
+            //finally check if laser has hit solid matter
+            if (levelMap.detectCollision(x, y, r, orient)) {
+                laserIt.remove();
+                continue;
             }
         }
 
@@ -538,7 +555,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (d < (r + Constants.PLAYER_RADIUS)) {
                 body.setStatic();
                 player.explode(true);
-                targetsRemaining = 100;
+                targetsRemaining = initialTargetsRemaining;
                 detonate();
             }
         }
@@ -550,6 +567,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
             if (d < 3.0f * Constants.PLAYER_RADIUS) {
                 targetsRemaining -= 2;
+            }
+
+            if (targetsRemaining == 0) {
+                setReadyAlert();
             }
         }
 
@@ -680,6 +701,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         bannerText = r.getString(R.string.paused_banner);
     }
 
+    private void setReadyAlert() {
+        Resources r = context.getResources();
+        setAlert(r.getString(R.string.ready_alert));
+    }
+
     private void setUnlockAlert() {
         Resources r = context.getResources();
         setAlert(r.getString(R.string.unlock_alert));
@@ -688,6 +714,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private void setCompletionAlert() {
         Resources r = context.getResources();
         setAlert(r.getString(R.string.completion_alert));
+    }
+
+    private void setAudioAlert(boolean b) {
+        Resources r = context.getResources();
+        setAlert(r.getString((b) ? R.string.audio_on : R.string.audio_off));
     }
 
     private void setAlert(String s) {
