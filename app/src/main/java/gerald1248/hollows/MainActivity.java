@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     private int highestLevelIndex = 0;
     private boolean playAudio = false;
     private Typeface typeface = null;
+    BroadcastReceiver receiver = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,7 @@ public class MainActivity extends Activity {
         //filters
         IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
-        BroadcastReceiver receiver = new ScreenReceiver();
+        receiver = new ScreenReceiver();
         registerReceiver(receiver, filter);
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -112,6 +113,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
         loopMediaPlayer.release();
         panel = null;
+        unregisterReceiver(receiver);
     }
 
     private void readPreferences() {
@@ -173,4 +175,6 @@ public class MainActivity extends Activity {
     }
 
     public int getHighestLevelIndex() { return highestLevelIndex; }
+
+    public boolean getPlayAudio() { return playAudio; }
 }

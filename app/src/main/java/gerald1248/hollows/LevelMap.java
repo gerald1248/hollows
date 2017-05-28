@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -51,7 +52,6 @@ public class LevelMap {
         this.typeface = typeface;
         this.levelIndex = levelIndex;
 
-        //TODO: use ALPHA_8 instead
         offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ALPHA_8);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
@@ -76,9 +76,32 @@ public class LevelMap {
         offscreenCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
 
+    public void drawGrid(Canvas canvas, int limit) {
+        Paint paint = new Paint();
+        paint.setStyle(Paint.Style.STROKE);
+        float r = (float)limit/2;
+        for (int i = 0; i < limit/2; i += limit/20) {
+            canvas.drawCircle(r, r, i, paint);
+        }
+
+        Path path = new Path();
+        float f = (float)limit;
+        for (int i = 0; i < limit; i += limit/10) {
+            path.moveTo((float) i, 0.0f);
+            path.lineTo((float) i, 2.0f * f);
+            path.moveTo(0.0f, (float) i);
+            path.lineTo(2.0f * f, (float) i);
+        }
+        canvas.drawPath(path, paint);
+    }
+
     public void drawOffscreen() {
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
+
+        if (Constants.DRAW_GRID) {
+            drawGrid(offscreenCanvas, (int)Constants.MAX_MAP);
+        }
 
         Resources resources = context.getResources();
         String[] levels = resources.getStringArray(R.array.levels);
@@ -131,12 +154,12 @@ public class LevelMap {
                     charMap[row][col] = c;
                 }
             } else if (c == 'w') {
-                addTowerS((float)col * Constants.TILE_LENGTH + Constants.TILE_LENGTH/2, (float)row * Constants.TILE_LENGTH);
+                addTowerS((float)col * Constants.TILE_LENGTH + half, (float)row * Constants.TILE_LENGTH);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'm') {
-                addTowerN((float)col * Constants.TILE_LENGTH + Constants.TILE_LENGTH/2, (float)row * Constants.TILE_LENGTH + Constants.TILE_LENGTH);
+                addTowerN((float)col * Constants.TILE_LENGTH + half, (float)row * Constants.TILE_LENGTH + Constants.TILE_LENGTH);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
@@ -206,7 +229,7 @@ public class LevelMap {
     }
 
     public void addTowerN(float cx, float cy) {
-        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/2), (int)cx, (int)cy, -(float)Math.PI/2)); // 12 o'clock
+        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/1.5f), (int)cx, (int)cy, -(float)Math.PI/2)); // 12 o'clock
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
@@ -221,13 +244,23 @@ public class LevelMap {
         Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
         canvas.drawBitmap(offscreenBitmap, null, r, paint);
 
-        // now draw towers
+        // now draw towers - these aren't physical objects in the game
         for (QualifiedShape qs : towers) {
             Tower t = (Tower)qs;
             canvas.drawCircle(t.x, t.y, t.shape.radius, paint);
         }
 
         canvas.restore();
+
+        /*
+        //exp - standard translation
+        canvas.save();
+        int half = (int) Constants.SCREEN_WIDTH / 2;
+        Rect source = new Rect((int) cx - half, (int) cy - half, (int) cx + half, (int) cy + half);
+        Rect dest = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        canvas.drawBitmap(offscreenBitmap, source, dest, paint);
+        canvas.restore();
+        */
     }
 
     public void initStaticShapes(ImpulseScene impulse) {
@@ -322,7 +355,16 @@ public class LevelMap {
     }
 
     public void removeTower(Tower t) {
+        if (towers.contains(t) == false) {
+            System.out.printf("can't remove tower as not in towers coll'n");
+        }
+
+        int before, after;
+        before = towers.size();
         towers.remove(t);
+        after = towers.size();
+
+        System.out.printf("tower removal: before=%d after=%d\n", before, after);
     }
 
     public Point getEndPoint() {

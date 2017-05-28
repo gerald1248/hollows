@@ -21,11 +21,12 @@ public class ScreenReceiver extends BroadcastReceiver {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
             state = ScreenBroadcast.Off;
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
+            System.out.println("ScreenReceiver.onReceive ON");
             state = ScreenBroadcast.On;
             MainActivity mainActivity = (MainActivity) context;
-            Panel panel = mainActivity.getPanel();
-            panel.showPauseScreen();
-            System.out.println("ScreenReceiver.onReceive ON");
+            if (mainActivity != null) {
+                mainActivity.recreate();
+            }
         } else {
             state = ScreenBroadcast.None;
         }
