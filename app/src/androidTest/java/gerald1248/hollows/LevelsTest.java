@@ -33,7 +33,6 @@ public class LevelsTest {
             dimensions(lines);
             validTiles(lines);
         }
-
     }
 
     public void requiredTiles(String level) {

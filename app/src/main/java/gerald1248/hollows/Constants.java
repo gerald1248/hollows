@@ -26,5 +26,6 @@ public class Constants {
     public static float FONT_SIZE_LARGE = 32.0f;
     public static float FONT_SIZE_MEDIUM = 24.0f;
     public static float FONT_SIZE_SMALL = 16.0f;
+    public static float ORB_PROXIMITY_FACTOR = 3.0f;
     public static boolean DRAW_GRID = false;
 }
