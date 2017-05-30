@@ -234,17 +234,20 @@ public class LevelMap {
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
         Paint paint = new Paint();
-        paint.setStrokeWidth((float) 2.0);
+        paint.setStrokeWidth(2.0f);
         paint.setColor(color);
 
+        // no translation req'd
+        int w = Constants.SCREEN_WIDTH;
+        int h = Constants.SCREEN_HEIGHT;
+        Rect source = new Rect((int) -cx - w/2, (int) -cy - h/2, (int) -cx + w/2, (int) -cy + h/2);
+        Rect dest = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        canvas.drawBitmap(offscreenBitmap, source, dest, paint);
+
+        // now draw towers - these aren't physical objects in the game
         canvas.save();
         canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
 
-        // copy from offscreen canvas
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
-        canvas.drawBitmap(offscreenBitmap, null, r, paint);
-
-        // now draw towers - these aren't physical objects in the game
         for (QualifiedShape qs : towers) {
             Tower t = (Tower)qs;
             canvas.drawCircle(t.x, t.y, t.shape.radius, paint);

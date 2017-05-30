@@ -48,12 +48,9 @@ public class Starfield {
         paint.setStrokeWidth((float) 2.0);
         paint.setColor(color);
 
-        canvas.save();
-        canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
-
-        // copy from offscreen canvas
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP/2, (int) Constants.MAX_MAP/2);
-        canvas.drawBitmap(bitmap, null, r, paint);
-
-        canvas.restore();
+        int w = Constants.SCREEN_WIDTH;
+        int h = Constants.SCREEN_HEIGHT;
+        Rect source = new Rect((int) -cx - w/2, (int) -cy - h/2, (int) -cx + w/2, (int) -cy + h/2);
+        Rect dest = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        canvas.drawBitmap(bitmap, source, dest, paint);
     }}
