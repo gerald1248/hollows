@@ -251,16 +251,6 @@ public class LevelMap {
         }
 
         canvas.restore();
-
-        /*
-        //exp - standard translation
-        canvas.save();
-        int half = (int) Constants.SCREEN_WIDTH / 2;
-        Rect source = new Rect((int) cx - half, (int) cy - half, (int) cx + half, (int) cy + half);
-        Rect dest = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-        canvas.drawBitmap(offscreenBitmap, source, dest, paint);
-        canvas.restore();
-        */
     }
 
     public void initStaticShapes(ImpulseScene impulse) {
@@ -329,10 +319,7 @@ public class LevelMap {
                 float x2 = qs.x;
                 float y2 = qs.y;
 
-                float d = (float) Math.hypot((double) x2 - (double) cx, (double) y2 - (double) cy);
-
-                if (d < r + r2) {
-                    //shape is part of offline canvas, so keep it and animate main canvas
+                if (Math.abs((cx - x2) * (cx - x2) + (cy - y2) * (cy - y2)) < (r + r2) * (r + r2)) {
                     return qs;
                 }
             }
@@ -345,9 +332,7 @@ public class LevelMap {
             float x2 = t.x;
             float y2 = t.y;
 
-            float d = (float) Math.hypot((double) x2 - (double) cx, (double) y2 - (double) cy);
-
-            if (d < r + r2) {
+            if (Math.abs((cx - x2) * (cx - x2) + (cy - y2) * (cy - y2)) < (r + r2) * (r + r2)) {
                 return qs;
             }
         }

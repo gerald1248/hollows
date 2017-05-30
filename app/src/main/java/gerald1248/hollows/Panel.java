@@ -289,8 +289,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 if (qs instanceof TitleOrb || qs instanceof BaseOrb || qs instanceof AudioOrb) {
                     float x2 = qs.x;
                     float y2 = qs.y;
-                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
-                    if (d < (qs.shape.radius + Constants.PLAYER_RADIUS) * 1.5f) {
+
+                    if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                         Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float)Math.PI, 8);
                         w.setObserver(body);
                         w.setVelocityFactor(0.5f);
@@ -428,7 +428,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
-
             if (targetsRemaining > 0) {
                 player.explode(true);
                 targetsRemaining = initialTargetsRemaining;
@@ -550,9 +549,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //proximity to player
             float playerX = body.position.x;
             float playerY = body.position.y;
-            float d = (float) Math.hypot((double) x - (double) playerX, (double) y - (double) playerY);
-
-            if (d < (r + Constants.PLAYER_RADIUS)) {
+            if (Math.abs((playerX - x) * (playerX - x) + (playerY - y) * (playerY - y)) < (r + Constants.PLAYER_RADIUS) * (r + Constants.PLAYER_RADIUS)) {
                 body.setStatic();
                 player.explode(true);
                 targetsRemaining = initialTargetsRemaining;
@@ -564,8 +561,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //TODO: move proximity check to specialized Orb class
             //finally, check if near endPoint
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
-            float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
-            if (d < 3.0f * Constants.PLAYER_RADIUS) {
+
+            if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                 targetsRemaining -= 2;
             }
 
@@ -615,7 +612,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
         homingDevice.draw(canvas);
 
-        //don't animate lasers etc., so exit here if the panel has been paused
+        //don't animate lasers etc. in pause mode, so exit here if the panel has been paused
         if (state == PanelState.Paused) {
             return;
         }

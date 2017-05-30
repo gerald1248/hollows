@@ -28,6 +28,18 @@ public class Tile {
         this.bottom = this.top + this.side;
     }
 
+    public char getType() {
+        return type;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
     void draw(Canvas canvas, Paint paint) {
         if (type == '.') {
             return;

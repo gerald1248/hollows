@@ -24,7 +24,7 @@ public class Laser implements Projectile {
     // fixed params
     private float cx;
     private float cy;
-    private int steps, stepsRemaining;
+    private int stepsRemaining;
     private float dd = Constants.PLAYER_RADIUS;
     private Body observer = null;
 
@@ -34,7 +34,6 @@ public class Laser implements Projectile {
         this.x = this.cx;
         this.y = this.cy;
         this.orient = orient;
-        this.steps = steps;
         this.stepsRemaining = steps;
     }
 
