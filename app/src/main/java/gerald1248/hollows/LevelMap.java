@@ -348,8 +348,6 @@ public class LevelMap {
         before = towers.size();
         towers.remove(t);
         after = towers.size();
-
-        System.out.printf("tower removal: before=%d after=%d\n", before, after);
     }
 
     public Point getEndPoint() {

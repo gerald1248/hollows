@@ -52,6 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
+    private DangerZone dangerZone = new DangerZone();
 
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
@@ -602,6 +603,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
+
+        if (targetsRemaining > 0) {
+            dangerZone.draw(canvas, -body.position.x, -body.position.y, Color.RED);
+        }
         player.draw(canvas);
 
         // display targets remaining
