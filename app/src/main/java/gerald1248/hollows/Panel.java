@@ -64,6 +64,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private int levelIndex = 0;
     private int frames = 0;
     private int alertFrames = 0;
+    private int alpha = 25;
 
     private float initialBodyMass = -1.0f;
 
@@ -171,6 +172,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
                 //then start over
                 levelIndex = 0;
+            } else if (levelMap.getTowers().isEmpty()) {
+                setPerfectRunAlert();
             }
             mainActivity.setLevelIndex(levelIndex);
         }
@@ -261,23 +264,22 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     if (y2 < y1) {
                         continue;
                     }
-                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
 
-                    if (d > Constants.TOWER_RANGE) {
+                    if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
                         continue;
                     }
                 } else {
                     if (y2 > y1) {
                         continue;
                     }
-                    float d = (float) Math.hypot((double) x2 - (double) x1, (double) y2 - (double) y1);
-                    if (d > Constants.TOWER_RANGE) {
+
+                    if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
                         continue;
                     }
                 }
                 float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
                 angle -= (float)Math.PI/2;
-                Laser l = new Laser(x2, y2, angle, 100);
+                Laser l = new Laser(x2, y2, angle, 30);
                 l.setObserver(body);
                 l.setVelocityFactor(0.5f);
                 enemyLasers.add(l);
@@ -447,8 +449,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             detonate();
         }
 
-        //check if laser has hit a static object; if it has, laser disappears
-        //also check if it's hit a 2D body
+        //check if laser has hit a 2D body
+        //also check if it's hit a static object; if it has, laser disappears
 
         //iterate over the player's laser bolts
         Iterator<Laser> laserIt = lasers.iterator();
@@ -468,10 +470,19 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
             //important: need to check for 2D collisions first
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
+
+            if (qs == null) {
+                //try half interval just in case, and only for player's own lasers
+                qs = levelMap.detectShapeCollision((x + l.prevX)/2, (y + l.prevY)/2, r);
+                if (qs != null) {
+                    System.out.printf("DONEIT");
+                }
+            }
+
             if (qs != null) {
+                System.out.printf("Laser collision orb x=%.2f y=%.2f r=%.2f\n", x, y, r);
                 laserIt.remove();
 
-                //TODO: reduce sweep for towers
                 Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
                 wave.setObserver(body);
                 waves.add(wave);
@@ -513,7 +524,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //finally check if laser has hit solid matter
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
-                continue;
+                System.out.printf("Laser collision static matter x=%.2f y=%.2f r=%.2f\n", x, y, r);
             }
         }
 
@@ -550,7 +561,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //proximity to player
             float playerX = body.position.x;
             float playerY = body.position.y;
-            if (Math.abs((playerX - x) * (playerX - x) + (playerY - y) * (playerY - y)) < (r + Constants.PLAYER_RADIUS) * (r + Constants.PLAYER_RADIUS)) {
+            if (Collision.circleCircle(playerX, x, playerY, y, r, Constants.PLAYER_RADIUS)) {
                 body.setStatic();
                 player.explode(true);
                 targetsRemaining = initialTargetsRemaining;
@@ -563,7 +574,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //finally, check if near endPoint
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
 
-            if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
+            //if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
+            if (Collision.circleCircle(x1, y1, x2, y2, Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                 targetsRemaining -= 2;
             }
 
@@ -572,7 +584,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             }
         }
 
-        //TODO: add charMap test that ensures space between orbs
         //add 0.5r tolerance to avoid flicker
         Orb o = (Orb)levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
         if (state == PanelState.Paused) {
@@ -605,7 +616,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
 
         if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, -body.position.x, -body.position.y, Color.RED);
+            if (frames % 6 == 0) { //5 Hz
+                alpha = 10 + (int)(Math.random() * 15.0);
+            }
+            dangerZone.draw(canvas, -body.position.x, -body.position.y, Color.WHITE, alpha);
         }
         player.draw(canvas);
 
@@ -656,13 +670,12 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     void updateInfo(Canvas canvas) {
         canvas.save();
         Resources r = context.getResources();
+        int color = Color.GRAY;
 
         String s = String.format(r.getString(R.string.rescue_format), 100 - targetsRemaining);
-        int color = (targetsRemaining < 1) ? Color.GREEN : Color.GRAY;
         TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface, false);
 
         s = String.format(r.getString(R.string.level_format), levelIndex + 1);
-        color = Color.GRAY;
         TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface, false);
 
         TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
@@ -679,10 +692,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
 
         canvas.restore();
-    }
-
-    public int getLevelIndex() {
-        return levelIndex;
     }
 
     public void setLevelIndex(int i) {
@@ -711,6 +720,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private void setUnlockAlert() {
         Resources r = context.getResources();
         setAlert(r.getString(R.string.unlock_alert));
+    }
+
+    private void setPerfectRunAlert() {
+        Resources r = context.getResources();
+        setAlert(r.getString(R.string.perfect_run_alert));
     }
 
     private void setCompletionAlert() {

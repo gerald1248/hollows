@@ -36,7 +36,7 @@ public class ContextTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
         Resources resources = appContext.getResources();
         String[] levels = resources.getStringArray(R.array.levels);
-        assertTrue(levels.length >= 4);
+        assertTrue(levels.length >= 5); // initial release has 5 levels
     }
 
     //TODO tests for resources

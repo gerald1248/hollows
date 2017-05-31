@@ -310,21 +310,7 @@ public class LevelMap {
         return false;
     }
 
-    //TODO: move collision logic to Orb objects
     public QualifiedShape detectShapeCollision(float cx, float cy, float r) {
-        for (QualifiedShape qs : shapes) {
-            Shape s = qs.shape;
-            if (s instanceof Circle) {
-                float r2 = s.radius;
-                float x2 = qs.x;
-                float y2 = qs.y;
-
-                if (Math.abs((cx - x2) * (cx - x2) + (cy - y2) * (cy - y2)) < (r + r2) * (r + r2)) {
-                    return qs;
-                }
-            }
-        }
-
         // all towers are (half-)circles
         for (QualifiedShape qs : towers) {
             Tower t = (Tower)qs;
@@ -332,22 +318,29 @@ public class LevelMap {
             float x2 = t.x;
             float y2 = t.y;
 
-            if (Math.abs((cx - x2) * (cx - x2) + (cy - y2) * (cy - y2)) < (r + r2) * (r + r2)) {
+            if (Collision.circleCircle(cx, cy, x2, y2, r, r2)) {
                 return qs;
             }
         }
+
+        for (QualifiedShape qs : shapes) {
+            Shape s = qs.shape;
+            if (s instanceof Circle) {
+                float r2 = s.radius;
+                float x2 = qs.x;
+                float y2 = qs.y;
+
+                if (Collision.circleCircle(cx, cy, x2, y2, r, r2)) {
+                    return qs;
+                }
+            }
+        }
+
         return null;
     }
 
     public void removeTower(Tower t) {
-        if (towers.contains(t) == false) {
-            System.out.printf("can't remove tower as not in towers coll'n");
-        }
-
-        int before, after;
-        before = towers.size();
         towers.remove(t);
-        after = towers.size();
     }
 
     public Point getEndPoint() {
