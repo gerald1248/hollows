@@ -3,15 +3,16 @@ Hollows
 
 <img src="screenshots/screenshot.png" height="400" alt="Hollows screenshot"/>
 
-`Hollows` is an arcade game in the style of the 80s. Your task is to rescue settlers from a sequence of caves known as the Hollows.
+`Hollows` is an arcade game in the style of the 80s. Your task is to rescue settlers from a sequence of caves known as the Hollows. If you have an Android device or compatible Chromebook, you can download it from the [Play Store](https://play.google.com/store/apps/details?id=gerald1248.hollows).
 
 Gameplay is optimized for public transport and open spaces:
 
 * startup time is short
-* no data connection required
+* strictly offline
 * battery use is moderate
 * levels are brief
 * contrast is high for open air use
+* audio is off until you turn it on
 
 In terms of UI, `Hollows` breaks with arcade conventions in that it
 
@@ -58,4 +59,4 @@ PressStart2P font [fontlibrary.org/en/font/press-start-2p](https://fontlibrary.o
 
 Loops created in Smasher: [smasher.sourceforge.net](http://smasher.sourceforge.net).
 
-Original sample "Synth loop" by LS: [www.freesound.org](samplesViewSingle.php?id=66381).
+Original sample "Synth loop" by LS: [www.freesound.org](http://www.freesound.org/samplesViewSingle.php?id=66381).
