@@ -16,7 +16,7 @@ import org.magnos.impulse.Vec2;
 public class Laser implements Projectile {
     public float r = 8.0f;
     public float d = 0.0f;
-    public float x, y;
+    public float x, y, prevX, prevY;
 
     // all angles in radians until passed to API
     public float orient;
@@ -33,6 +33,8 @@ public class Laser implements Projectile {
         this.cy = cy;
         this.x = this.cx;
         this.y = this.cy;
+        this.prevX = this.x;
+        this.prevY = this.y;
         this.orient = orient;
         this.stepsRemaining = steps;
     }
@@ -49,6 +51,10 @@ public class Laser implements Projectile {
         float translateY = (observer == null) ? cy : observer.position.y;
 
         canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
+
+        //store previous values
+        prevX = x;
+        prevY = y;
 
         d += dd;
         Paint paint = new Paint();

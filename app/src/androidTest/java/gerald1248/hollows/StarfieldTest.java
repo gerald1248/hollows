@@ -1,10 +1,14 @@
 package gerald1248.hollows;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
+@RunWith(AndroidJUnit4.class)
 public class StarfieldTest {
     @Test
     public void constructor_Successful() throws Exception {

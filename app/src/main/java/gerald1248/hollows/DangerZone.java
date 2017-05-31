@@ -5,17 +5,17 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 /**
- * Need to draw the danger zone around the map (preferably in red)
- * to avoid player frustration over unexplained explosion
+ * Need to draw a visible danger zone around the map
+ * to avoid player frustration over unexplained explosions
  */
 
 public class DangerZone {
-    public static void draw(Canvas canvas, float cx, float cy, int color) {
-        int w = 50;
+    public static void draw(Canvas canvas, float cx, float cy, int color, int alpha) {
+        int w = 40;
 
         Paint paint = new Paint();
         paint.setColor(color);
-        paint.setAlpha(25);
+        paint.setAlpha(alpha);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth((float) w);
 
