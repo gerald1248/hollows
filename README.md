@@ -5,6 +5,8 @@ Hollows
 
 `Hollows` is an arcade game in the style of the 80s. Your task is to rescue settlers from a sequence of caves known as the Hollows. If you have an Android device or compatible Chromebook, you can download it from the [Play Store](https://play.google.com/store/apps/details?id=gerald1248.hollows).
 
+Here's a [playthrough of the first level](https://www.youtube.com/watch?v=R0ldZ9svasA).
+
 Gameplay is optimized for public transport and open spaces:
 
 * startup time is short
