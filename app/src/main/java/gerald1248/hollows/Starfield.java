@@ -40,9 +40,10 @@ public class Starfield {
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
         //parallax effect: the bitmap is half the size of the game map
-        //need to reduce scrolling speed for starfield by (more than?) half
-        cx /= 3;
-        cy /= 3;
+        //need to reduce scrolling speed for starfield by half
+        //TODO: more than half preferable?
+        cx /= 2;
+        cy /= 2;
 
         Paint paint = new Paint();
         paint.setStrokeWidth((float) 2.0);
