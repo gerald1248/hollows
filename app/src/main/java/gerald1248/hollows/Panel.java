@@ -52,7 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
-    private DangerZone dangerZone = new DangerZone();
+    private DangerZone dangerZone = new DangerZone(Color.WHITE);
 
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
@@ -64,7 +64,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private int levelIndex = 0;
     private int frames = 0;
     private int alertFrames = 0;
-    private int alpha = 25;
 
     private float initialBodyMass = -1.0f;
 
@@ -152,6 +151,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void reset(boolean advance) {
+        boolean towersDestroyed = levelMap.getTowers().isEmpty();
         impulse.clear();
         lasers.clear();
         enemyLasers.clear();
@@ -172,7 +172,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
                 //then start over
                 levelIndex = 0;
-            } else if (levelMap.getTowers().isEmpty()) {
+            } else if (towersDestroyed) {
                 setPerfectRunAlert();
             }
             mainActivity.setLevelIndex(levelIndex);
@@ -406,7 +406,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
                     Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
-                    l.setVelocityFactor(0.75f);
+                    l.setObserver(body);
                     lasers.add(l);
 
                     if (lasers.size() > Constants.MAX_PROJECTILES) {
@@ -473,10 +473,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
             if (qs == null) {
                 //try half interval just in case, and only for player's own lasers
+                //so step (and thus velocity) can be high without loss of precision
                 qs = levelMap.detectShapeCollision((x + l.prevX)/2, (y + l.prevY)/2, r);
-                if (qs != null) {
-                    System.out.printf("DONEIT");
-                }
             }
 
             if (qs != null) {
@@ -524,6 +522,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //finally check if laser has hit solid matter
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
+                Wave wave = new Wave(x, y, orient, 2.0f * (float) Math.PI, 4);
+                wave.setObserver(body);
+                wave.setVelocityFactor(0.5f);
+                waves.add(wave);
                 System.out.printf("Laser collision static matter x=%.2f y=%.2f r=%.2f\n", x, y, r);
             }
         }
@@ -574,7 +576,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             //finally, check if near endPoint
             float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
 
-            //if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
             if (Collision.circleCircle(x1, y1, x2, y2, Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                 targetsRemaining -= 2;
             }
@@ -615,13 +616,10 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
         levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
 
-        if (targetsRemaining > 0) {
-            if (frames % 6 == 0) { //5 Hz
-                alpha = 10 + (int)(Math.random() * 15.0);
-            }
-            dangerZone.draw(canvas, -body.position.x, -body.position.y, Color.WHITE, alpha);
-        }
         player.draw(canvas);
+        if (targetsRemaining > 0) {
+            dangerZone.draw(canvas, -body.position.x, -body.position.y);
+        }
 
         // display targets remaining
         updateInfo(canvas);
