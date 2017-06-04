@@ -31,7 +31,7 @@ import org.magnos.impulse.Vec2;
  * MotionEvents are handled here, as is the state of each touch interaction
  */
 
-public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameObject {
+public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public ImpulseScene impulse = null;
     public Body body = null;
     public enum PanelState {
@@ -52,7 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
-    private DangerZone dangerZone = new DangerZone(Color.WHITE);
+    private DangerZone dangerZone = new DangerZone();
 
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
@@ -102,7 +102,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void initPlayer() {
-        player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
+        player = new Player(new Rect(100, 100, 200, 200), 0.0f);
 
         //screen position never changes
         Point playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
@@ -289,7 +289,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //animate orbs to let the user know flying close to them has an effect
         if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof TitleOrb || qs instanceof BaseOrb || qs instanceof AudioOrb) {
+                if (qs instanceof BaseOrb || qs instanceof TitleOrb || qs instanceof AudioOrb || qs instanceof RedshiftOrb) {
+
                     float x2 = qs.x;
                     float y2 = qs.y;
 
@@ -516,6 +517,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                         setUnlockAlert();
                     }
                     continue;
+                } else if (o instanceof RedshiftOrb) {
+                    MainActivity mainActivity = (MainActivity)context;
+                    mainActivity.toggleRedshift();
+                    setRedshiftAlert(mainActivity.getRedshift());
+                    continue;
                 }
             }
 
@@ -553,11 +559,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     continue;
                 }
 
-                QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
-                if (qs != null) {
-                    laserIt.remove();
-                    continue;
-                }
+                //don't check for collisions with 2D shapes
             }
 
             //proximity to player
@@ -598,7 +600,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
     }
 
-    @Override
     public void draw(Canvas canvas) {
         if (canvas == null) {
             return;
@@ -611,14 +612,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             detonateFramesRemaining--;
         }
 
+
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
-        starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
-        levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
+        MainActivity mainActivity = (MainActivity)context;
+        int masterColor = mainActivity.getMasterColor();
+        starfield.draw(canvas, -body.position.x, -body.position.y, masterColor);
+        levelMap.draw(canvas, -body.position.x, -body.position.y, masterColor);
 
-        player.draw(canvas);
+        player.draw(canvas, masterColor);
         if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, -body.position.x, -body.position.y);
+            dangerZone.draw(canvas, -body.position.x, -body.position.y, masterColor);
         }
 
         // display targets remaining
@@ -627,7 +631,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         // update homing device - angle to endPoint
         float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
         homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
-        homingDevice.draw(canvas);
+        homingDevice.draw(canvas, masterColor);
 
         //don't animate lasers etc. in pause mode, so exit here if the panel has been paused
         if (state == PanelState.Paused) {
@@ -640,7 +644,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (w.isDone()) {
                 it.remove();
             } else {
-                w.draw(canvas);
+                w.draw(canvas, masterColor);
             }
         }
 
@@ -650,7 +654,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas);
+                l.draw(canvas, masterColor);
             }
         }
 
@@ -660,7 +664,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas);
+                l.draw(canvas, masterColor);
             }
         }
     }
@@ -733,6 +737,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private void setAudioAlert(boolean b) {
         Resources r = context.getResources();
         setAlert(r.getString((b) ? R.string.audio_on : R.string.audio_off));
+    }
+
+    private void setRedshiftAlert(boolean b) {
+        Resources r = context.getResources();
+        setAlert(r.getString((b) ? R.string.redshift_on : R.string.redshift_off));
     }
 
     private void setAlert(String s) {

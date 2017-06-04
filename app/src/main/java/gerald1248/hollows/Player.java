@@ -16,14 +16,12 @@ public class Player implements GameObject {
     public float orient;
 
     private Rect r;
-    private int color;
     private float scale;
     private boolean explode, escape;
 
-    public Player(Rect rectangle, float orient, int color) {
+    public Player(Rect rectangle, float orient) {
         this.r = rectangle;
         this.orient = orient;
-        this.color = color;
         this.orient = -0.5f * (float)Math.PI;
         this.scale = 1.0f;
         this.explode = false;
@@ -39,7 +37,7 @@ public class Player implements GameObject {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(Canvas canvas, int color) {
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
         paint.setColor(color);
