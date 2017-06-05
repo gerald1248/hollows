@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -23,9 +24,12 @@ public class MainActivity extends Activity {
     private Panel panel = null;
     private int levelIndex = 0;
     private int highestLevelIndex = 0;
+    private int nonRedshiftHighestLevelIndex = 0;
     private boolean playAudio = false;
+    private boolean redshift = false;
     private Typeface typeface = null;
     BroadcastReceiver receiver = null;
+    private int masterColor = Color.WHITE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,8 +127,13 @@ public class MainActivity extends Activity {
         }
         levelIndex = preferences.getInt("levelIndex", 0);
         highestLevelIndex = preferences.getInt("highestLevelIndex", 0);
+        nonRedshiftHighestLevelIndex = preferences.getInt("nonRedshiftHighestLevelIndex", 0);
+        redshift = preferences.getBoolean("redshift", false);
         playAudio = preferences.getBoolean("playAudio", false);
-        System.out.printf("readPreferences() - levelIndex=%d highestLevelIndex=%d playAudio=%b\n", levelIndex, highestLevelIndex, playAudio);
+
+        if (redshift) {
+            masterColor = Color.RED;
+        }
     }
 
     private void writePreferences() {
@@ -132,9 +141,10 @@ public class MainActivity extends Activity {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("levelIndex", levelIndex);
         editor.putInt("highestLevelIndex", highestLevelIndex);
+        editor.putInt("nonRedshiftHighestLevelIndex", highestLevelIndex);
+        editor.putBoolean("redshift", redshift);
         editor.putBoolean("playAudio", playAudio);
         editor.commit();
-        System.out.printf("writePreferences() - levelIndex=%d highestLevelIndex=%d playAudio=%b\n", levelIndex, highestLevelIndex, playAudio);
     }
 
     private int getAudioResource(int levelIndex) {
@@ -160,9 +170,22 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void toggleRedshift() {
+        redshift = (redshift) ? false : true;
+
+        masterColor = (redshift) ? Color.RED : Color.WHITE;
+
+        if (redshift) {
+            nonRedshiftHighestLevelIndex = highestLevelIndex;
+            highestLevelIndex = 9999;
+        } else {
+            highestLevelIndex = nonRedshiftHighestLevelIndex;
+        }
+    }
+
     public void setLevelIndex(int i) {
         levelIndex = i;
-        if (i > highestLevelIndex) {
+        if (i > highestLevelIndex ) {
             highestLevelIndex = i;
         }
         if (loopMediaPlayer != null) {
@@ -170,11 +193,13 @@ public class MainActivity extends Activity {
         }
     }
 
-    public Panel getPanel() {
-        return panel;
-    }
-
     public int getHighestLevelIndex() { return highestLevelIndex; }
 
     public boolean getPlayAudio() { return playAudio; }
+
+    public boolean getRedshift() { return redshift; }
+
+    public int getMasterColor() {
+        return masterColor;
+    }
 }

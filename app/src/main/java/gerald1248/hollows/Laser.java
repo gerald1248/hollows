@@ -40,7 +40,7 @@ public class Laser implements Projectile {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(Canvas canvas, int color) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
@@ -59,17 +59,19 @@ public class Laser implements Projectile {
         d += dd;
         Paint paint = new Paint();
         paint.setStrokeWidth(4.0f);
-        paint.setColor(Color.WHITE);
+        paint.setColor(color);
 
         x = cx + d * (float)Math.cos((double)orient);
         y = cy + d * (float)Math.sin((double)orient);
 
         paint.setStyle(Paint.Style.FILL);
 
-        paint.setColor(Color.argb(64, 255, 255, 255));
+        //paint.setColor(Color.argb(64, 255, 255, 255));
+        paint.setAlpha(64);
         canvas.drawCircle(x, y, r * 2, paint);
 
-        paint.setColor(Color.WHITE);
+        //paint.setColor(Color.WHITE);
+        paint.setAlpha(255);
         canvas.drawCircle(x, y, r, paint);
         canvas.restore();
     }

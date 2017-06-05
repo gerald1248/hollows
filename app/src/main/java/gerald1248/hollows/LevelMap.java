@@ -144,7 +144,13 @@ public class LevelMap {
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
-            } else if (c == 's') {
+            } else if (c == 'r') {
+                addRedshiftOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
+                    charMap[row][col] = '.';
+                }
+            }
+            else if (c == 's') {
                 startPoint = new Point(col * (int) Constants.TILE_LENGTH + (int) half, row * (int) Constants.TILE_LENGTH + (int) half);
                 // no need to update charMap - '.' is fine
             } else if (c == 'e') {
@@ -222,6 +228,10 @@ public class LevelMap {
 
     public void addBaseOrb(float r, int cx, int cy) {
         shapes.add(new BaseOrb(context, r, cx, cy, typeface));
+    }
+
+    public void addRedshiftOrb(float r, int cx, int cy) {
+        shapes.add(new RedshiftOrb(context, r, cx, cy, typeface));
     }
 
     public void addTowerS(float cx, float cy) {

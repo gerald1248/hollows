@@ -44,7 +44,7 @@ public class Wave implements Projectile {
     public void setVelocityFactor(float f) { dr *= f; }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(Canvas canvas, int color) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
@@ -58,7 +58,7 @@ public class Wave implements Projectile {
         r += dr;
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
-        paint.setColor(Color.WHITE);
+        paint.setColor(color);
         int alpha = (Math.round(stepsRemaining * 100/steps) * 5) % 255;
         paint.setAlpha(alpha); // opaque then tail off quickly
         paint.setStyle(Paint.Style.STROKE);

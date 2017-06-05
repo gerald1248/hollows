@@ -31,7 +31,7 @@ import org.magnos.impulse.Vec2;
  * MotionEvents are handled here, as is the state of each touch interaction
  */
 
-public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameObject {
+public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public ImpulseScene impulse = null;
     public Body body = null;
     public enum PanelState {
@@ -52,7 +52,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
 
     private Starfield starfield = new Starfield();
-    private DangerZone dangerZone = new DangerZone(Color.WHITE);
+    private DangerZone dangerZone = new DangerZone();
 
     private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
@@ -66,6 +66,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     private int alertFrames = 0;
 
     private float initialBodyMass = -1.0f;
+
+    private float fontSizeLargeAdjusted = Constants.FONT_SIZE_LARGE;
+    private float fontSizeMediumAdjusted = Constants.FONT_SIZE_MEDIUM;
 
     private String bannerText;
     private String alertText;
@@ -95,6 +98,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
 
         homingDevice = new HomingDevice(Constants.TILE_LENGTH, Constants.SCREEN_HEIGHT - Constants.TILE_LENGTH, Constants.TILE_LENGTH/2);
 
+        adjustFontSizes();
+
         initPlayer(); //canvas
         initBody(); //impulse
 
@@ -102,7 +107,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
     }
 
     public void initPlayer() {
-        player = new Player(new Rect(100, 100, 200, 200), 0.0f, Color.rgb(255, 255, 255));
+        player = new Player(new Rect(100, 100, 200, 200), 0.0f);
 
         //screen position never changes
         Point playerPoint = new Point(Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2);
@@ -289,7 +294,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         //animate orbs to let the user know flying close to them has an effect
         if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof TitleOrb || qs instanceof BaseOrb || qs instanceof AudioOrb) {
+                if (qs instanceof BaseOrb || qs instanceof TitleOrb || qs instanceof AudioOrb || qs instanceof RedshiftOrb) {
+
                     float x2 = qs.x;
                     float y2 = qs.y;
 
@@ -478,7 +484,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             }
 
             if (qs != null) {
-                System.out.printf("Laser collision orb x=%.2f y=%.2f r=%.2f\n", x, y, r);
                 laserIt.remove();
 
                 Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
@@ -516,6 +521,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                         setUnlockAlert();
                     }
                     continue;
+                } else if (o instanceof RedshiftOrb) {
+                    MainActivity mainActivity = (MainActivity)context;
+                    mainActivity.toggleRedshift();
+                    setRedshiftAlert(mainActivity.getRedshift());
+                    continue;
                 }
             }
 
@@ -526,7 +536,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                 wave.setObserver(body);
                 wave.setVelocityFactor(0.5f);
                 waves.add(wave);
-                System.out.printf("Laser collision static matter x=%.2f y=%.2f r=%.2f\n", x, y, r);
             }
         }
 
@@ -553,17 +562,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
                     continue;
                 }
 
-                QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
-                if (qs != null) {
-                    laserIt.remove();
-                    continue;
-                }
+                //don't check for collisions with 2D shapes
             }
 
             //proximity to player
             float playerX = body.position.x;
             float playerY = body.position.y;
-            if (Collision.circleCircle(playerX, x, playerY, y, r, Constants.PLAYER_RADIUS)) {
+            if (Collision.circleCircle(playerX, playerY, x, y, r, Constants.PLAYER_RADIUS)) {
                 body.setStatic();
                 player.explode(true);
                 targetsRemaining = initialTargetsRemaining;
@@ -598,7 +603,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         }
     }
 
-    @Override
     public void draw(Canvas canvas) {
         if (canvas == null) {
             return;
@@ -611,14 +615,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             detonateFramesRemaining--;
         }
 
+
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
-        starfield.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
-        levelMap.draw(canvas, -body.position.x, -body.position.y, Color.WHITE);
+        MainActivity mainActivity = (MainActivity)context;
+        int masterColor = mainActivity.getMasterColor();
+        starfield.draw(canvas, -body.position.x, -body.position.y, masterColor);
+        levelMap.draw(canvas, -body.position.x, -body.position.y, masterColor);
 
-        player.draw(canvas);
+        player.draw(canvas, masterColor);
         if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, -body.position.x, -body.position.y);
+            dangerZone.draw(canvas, -body.position.x, -body.position.y, masterColor);
         }
 
         // display targets remaining
@@ -627,7 +634,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         // update homing device - angle to endPoint
         float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
         homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
-        homingDevice.draw(canvas);
+        homingDevice.draw(canvas, masterColor);
 
         //don't animate lasers etc. in pause mode, so exit here if the panel has been paused
         if (state == PanelState.Paused) {
@@ -640,7 +647,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (w.isDone()) {
                 it.remove();
             } else {
-                w.draw(canvas);
+                w.draw(canvas, masterColor);
             }
         }
 
@@ -650,7 +657,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas);
+                l.draw(canvas, masterColor);
             }
         }
 
@@ -660,7 +667,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas);
+                l.draw(canvas, masterColor);
             }
         }
     }
@@ -671,21 +678,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         int color = Color.GRAY;
 
         String s = String.format(r.getString(R.string.rescue_format), 100 - targetsRemaining);
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface, false);
+        TextUtils.draw(canvas, s, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH - 12.0f, fontSizeMediumAdjusted + 2.0f, Paint.Align.RIGHT, color, typeface, false);
 
         s = String.format(r.getString(R.string.level_format), levelIndex + 1);
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface, false);
+        TextUtils.draw(canvas, s, fontSizeMediumAdjusted, 12.0f, fontSizeMediumAdjusted + 2.0f, Paint.Align.LEFT, color, typeface, false);
 
-        TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
+        TextUtils.draw(canvas, bannerText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
-            yOffset += Constants.FONT_SIZE_HUGE;
+            TextUtils.draw(canvas, line, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
+            yOffset += fontSizeMediumAdjusted * 1.66f; // was: Constants.FONT_SIZE_LARGE and so just below *= 2.0f
         }
 
         if (alertFrames > 0) {
-            TextUtils.draw(canvas, alertText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
+            TextUtils.draw(canvas, alertText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
             alertFrames--;
         }
 
@@ -735,8 +742,39 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback, GameOb
         setAlert(r.getString((b) ? R.string.audio_on : R.string.audio_off));
     }
 
+    private void setRedshiftAlert(boolean b) {
+        Resources r = context.getResources();
+        setAlert(r.getString((b) ? R.string.redshift_on : R.string.redshift_off));
+    }
+
     private void setAlert(String s) {
         alertText = s;
         alertFrames = Constants.ALERT_FRAMES;
+    }
+
+    private void adjustFontSizes() {
+        float w = (float) Constants.SCREEN_WIDTH;
+
+        // large font size
+        Resources r = context.getResources();
+        Paint p1 = new Paint();
+        p1.setTextSize(Constants.FONT_SIZE_LARGE);
+        p1.setTypeface(typeface);
+        float w1 = p1.measureText(r.getString(R.string.completion_alert));
+
+        if (w1 > w) { // too large
+            fontSizeLargeAdjusted = Math.round((double) (Constants.FONT_SIZE_LARGE * (w/w1)));
+        } else if (w/w1 > 2.0f) { // comparatively small
+            fontSizeLargeAdjusted *= 1.5f;
+        }
+
+        Paint p2 = new Paint();
+        p2.setTextSize(Constants.FONT_SIZE_MEDIUM);
+        p2.setTypeface(typeface);
+        float w2 = p2.measureText(r.getString(R.string.info_line1));
+
+        if (w2 > w) { // too large
+            fontSizeMediumAdjusted = Math.round((double) (Constants.FONT_SIZE_MEDIUM * (w/w1)));
+        }
     }
 }
