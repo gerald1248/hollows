@@ -67,6 +67,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     private float initialBodyMass = -1.0f;
 
+    private float fontSizeLargeAdjusted = Constants.FONT_SIZE_LARGE;
+    private float fontSizeMediumAdjusted = Constants.FONT_SIZE_MEDIUM;
+
     private String bannerText;
     private String alertText;
     private String[] infoLines;
@@ -94,6 +97,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         endPoint = levelMap.getEndPoint();
 
         homingDevice = new HomingDevice(Constants.TILE_LENGTH, Constants.SCREEN_HEIGHT - Constants.TILE_LENGTH, Constants.TILE_LENGTH/2);
+
+        adjustFontSizes();
 
         initPlayer(); //canvas
         initBody(); //impulse
@@ -479,7 +484,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             if (qs != null) {
-                System.out.printf("Laser collision orb x=%.2f y=%.2f r=%.2f\n", x, y, r);
                 laserIt.remove();
 
                 Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
@@ -532,7 +536,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 wave.setObserver(body);
                 wave.setVelocityFactor(0.5f);
                 waves.add(wave);
-                System.out.printf("Laser collision static matter x=%.2f y=%.2f r=%.2f\n", x, y, r);
             }
         }
 
@@ -565,7 +568,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             //proximity to player
             float playerX = body.position.x;
             float playerY = body.position.y;
-            if (Collision.circleCircle(playerX, x, playerY, y, r, Constants.PLAYER_RADIUS)) {
+            if (Collision.circleCircle(playerX, playerY, x, y, r, Constants.PLAYER_RADIUS)) {
                 body.setStatic();
                 player.explode(true);
                 targetsRemaining = initialTargetsRemaining;
@@ -675,21 +678,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         int color = Color.GRAY;
 
         String s = String.format(r.getString(R.string.rescue_format), 100 - targetsRemaining);
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH - 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.RIGHT, color, typeface, false);
+        TextUtils.draw(canvas, s, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH - 12.0f, fontSizeMediumAdjusted + 2.0f, Paint.Align.RIGHT, color, typeface, false);
 
         s = String.format(r.getString(R.string.level_format), levelIndex + 1);
-        TextUtils.draw(canvas, s, Constants.FONT_SIZE_MEDIUM, 12.0f, Constants.FONT_SIZE_MEDIUM, Paint.Align.LEFT, color, typeface, false);
+        TextUtils.draw(canvas, s, fontSizeMediumAdjusted, 12.0f, fontSizeMediumAdjusted + 2.0f, Paint.Align.LEFT, color, typeface, false);
 
-        TextUtils.draw(canvas, bannerText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
+        TextUtils.draw(canvas, bannerText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, Constants.FONT_SIZE_MEDIUM, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
-            yOffset += Constants.FONT_SIZE_HUGE;
+            TextUtils.draw(canvas, line, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
+            yOffset += fontSizeMediumAdjusted * 1.66f; // was: Constants.FONT_SIZE_LARGE and so just below *= 2.0f
         }
 
         if (alertFrames > 0) {
-            TextUtils.draw(canvas, alertText, Constants.FONT_SIZE_HUGE, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
+            TextUtils.draw(canvas, alertText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
             alertFrames--;
         }
 
@@ -747,5 +750,31 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private void setAlert(String s) {
         alertText = s;
         alertFrames = Constants.ALERT_FRAMES;
+    }
+
+    private void adjustFontSizes() {
+        float w = (float) Constants.SCREEN_WIDTH;
+
+        // large font size
+        Resources r = context.getResources();
+        Paint p1 = new Paint();
+        p1.setTextSize(Constants.FONT_SIZE_LARGE);
+        p1.setTypeface(typeface);
+        float w1 = p1.measureText(r.getString(R.string.completion_alert));
+
+        if (w1 > w) { // too large
+            fontSizeLargeAdjusted = Math.round((double) (Constants.FONT_SIZE_LARGE * (w/w1)));
+        } else if (w/w1 > 2.0f) { // comparatively small
+            fontSizeLargeAdjusted *= 1.5f;
+        }
+
+        Paint p2 = new Paint();
+        p2.setTextSize(Constants.FONT_SIZE_MEDIUM);
+        p2.setTypeface(typeface);
+        float w2 = p2.measureText(r.getString(R.string.info_line1));
+
+        if (w2 > w) { // too large
+            fontSizeMediumAdjusted = Math.round((double) (Constants.FONT_SIZE_MEDIUM * (w/w1)));
+        }
     }
 }
