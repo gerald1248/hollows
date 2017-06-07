@@ -2,6 +2,7 @@ package gerald1248.hollows;
 
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
+import android.util.Log;
 
 /**
  * MainThread manages the central refresh loop
@@ -9,6 +10,8 @@ import android.view.SurfaceHolder;
  */
 
 public class MainThread extends Thread {
+    private static final String TAG = MainThread.class.getSimpleName();
+
     public static Canvas canvas;
 
     private SurfaceHolder surfaceHolder;
@@ -41,6 +44,7 @@ public class MainThread extends Thread {
                 synchronized (surfaceHolder) {
                     panel.update();
                     panel.draw(canvas);
+                    panel.tick(); //1.0.5
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -57,8 +61,9 @@ public class MainThread extends Thread {
             waitTime = targetTime - timeMillis;
 
             try {
+                Log.d(TAG, String.format("run (%d remaining)", waitTime));
                 if (waitTime > 0) {
-                    this.sleep(waitTime);
+                    sleep(waitTime);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -70,7 +75,7 @@ public class MainThread extends Thread {
                 frameCount = 0;
                 totalTime = 0;
             }
-            panel.tick();
+            //panel.tick();
         }
     }
 }

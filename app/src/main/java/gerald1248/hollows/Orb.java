@@ -8,10 +8,8 @@ import android.graphics.Paint;
  */
 
 public interface Orb {
-    public void draw(Canvas canvas, Paint paint);
-    public void onLand(); //TODO: necessary?
-    public void onFire();
-    public String getBannerText();
-    public String getAlertText();
-    public String[] getInfoLines();
+    void draw(Canvas canvas, Paint paint);
+    String getBannerText();
+    String getAlertText();
+    String[] getInfoLines();
 }

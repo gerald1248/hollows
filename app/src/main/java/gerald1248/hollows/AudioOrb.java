@@ -32,16 +32,6 @@ public class AudioOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire() {
-
-    }
-
-    @Override
-    public void onLand() {
-
-    }
-
-    @Override
     public String getBannerText() {
         return context.getResources().getString(R.string.audio_banner);
     }

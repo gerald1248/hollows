@@ -20,15 +20,6 @@ public class GenericOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire() {
-        //do nothing for now
-    }
-
-    @Override
-    public void onLand() {
-    }
-
-    @Override
     public String getBannerText() {
         return "";
     }
