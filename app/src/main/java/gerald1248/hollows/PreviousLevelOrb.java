@@ -31,16 +31,6 @@ public class PreviousLevelOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire() {
-
-    }
-
-    @Override
-    public void onLand() {
-
-    }
-
-    @Override
     public String getBannerText() {
         return context.getResources().getString(R.string.previous_level_banner);
     }

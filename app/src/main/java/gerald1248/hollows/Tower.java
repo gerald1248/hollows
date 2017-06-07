@@ -22,16 +22,6 @@ public class Tower extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onLand() {
-
-    }
-
-    @Override
-    public void onFire() {
-
-    }
-
-    @Override
     public String getBannerText() {
         return "";
     }

@@ -109,7 +109,6 @@ public class MainActivity extends Activity {
         if (loopMediaPlayer.isPlaying()) {
             loopMediaPlayer.pause();
         }
-        System.out.println("MyActivity.onStop");
     }
 
     @Override
@@ -171,7 +170,7 @@ public class MainActivity extends Activity {
     }
 
     public void toggleRedshift() {
-        redshift = (redshift) ? false : true;
+        redshift = !redshift;
 
         masterColor = (redshift) ? Color.RED : Color.WHITE;
 

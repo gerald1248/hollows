@@ -34,16 +34,6 @@ public class BaseOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public void onFire() {
-        //do nothing for now
-    }
-
-    @Override
-    public void onLand() {
-
-    }
-
-    @Override
     public String getAlertText() {
         return "";
     }

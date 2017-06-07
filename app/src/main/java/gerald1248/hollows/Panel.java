@@ -14,7 +14,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -47,14 +49,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private Context context = null;
     private HomingDevice homingDevice = null;
 
-    private ConcurrentLinkedQueue<Wave> waves = new ConcurrentLinkedQueue<Wave>();
-    private ConcurrentLinkedQueue<Laser> lasers = new ConcurrentLinkedQueue<Laser>();
-    private ConcurrentLinkedQueue<Laser> enemyLasers = new ConcurrentLinkedQueue<Laser>();
+    private LinkedList<Wave> waves = new LinkedList<Wave>();
+    private LinkedList<Laser> lasers = new LinkedList<Laser>();
+    private LinkedList<Laser> enemyLasers = new LinkedList<Laser>();
 
     private Starfield starfield = new Starfield();
     private DangerZone dangerZone = new DangerZone();
 
-    private ConcurrentHashMap<Integer, MultitouchState> multitouchMap = new ConcurrentHashMap<Integer, MultitouchState>();
+    private HashMap<Integer, MultitouchState> multitouchMap = new HashMap<Integer, MultitouchState>();
     private MultitouchState mts = new MultitouchState();
 
     private int detonateFramesRemaining = 0;
@@ -161,8 +163,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         lasers.clear();
         enemyLasers.clear();
         levelMap.clearTowers();
+        clearMultitouchState(); //from 1.0.5
         targetsRemaining = initialTargetsRemaining;
-
 
         if (advance) {
             MainActivity mainActivity = (MainActivity) context;
@@ -269,19 +271,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     if (y2 < y1) {
                         continue;
                     }
-
-                    if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
-                        continue;
-                    }
                 } else {
                     if (y2 > y1) {
                         continue;
                     }
-
-                    if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
-                        continue;
-                    }
                 }
+
+                //1.0.5
+                if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
+                    continue;
+                }
+
                 float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
                 angle -= (float)Math.PI/2;
                 Laser l = new Laser(x2, y2, angle, 30);
@@ -615,7 +615,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             detonateFramesRemaining--;
         }
 
-
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
         MainActivity mainActivity = (MainActivity)context;
@@ -707,7 +706,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void showPauseScreen() {
         //don't show pause screen at startup
-        if (thread == null || thread.canvas == null) {
+        if (thread == null || MainThread.canvas == null) {
             return;
         }
         thread.setRunning(true);
