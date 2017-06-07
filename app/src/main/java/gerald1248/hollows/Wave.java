@@ -18,7 +18,7 @@ public class Wave implements Projectile {
 
     // all angles in radians until passed to API
     public float orient; //rad
-    public float sweep = 2.0f * (float)Math.PI; //rad
+    public float sweep = 2.0f * (float) Math.PI; //rad
 
     // fixed params
     private int steps, stepsRemaining;
@@ -41,7 +41,9 @@ public class Wave implements Projectile {
     }
 
     @Override
-    public void setVelocityFactor(float f) { dr *= f; }
+    public void setVelocityFactor(float f) {
+        dr *= f;
+    }
 
     @Override
     public void draw(Canvas canvas, int color) {
@@ -59,11 +61,11 @@ public class Wave implements Projectile {
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
         paint.setColor(color);
-        int alpha = (Math.round(stepsRemaining * 100/steps) * 5) % 255;
+        int alpha = (Math.round(stepsRemaining * 100 / steps) * 5) % 255;
         paint.setAlpha(alpha); // opaque then tail off quickly
         paint.setStyle(Paint.Style.STROKE);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
-        canvas.drawArc(rect, (float)Math.toDegrees(orient - sweep/2), (float)Math.toDegrees(sweep), false, paint);
+        canvas.drawArc(rect, (float) Math.toDegrees(orient - sweep / 2), (float) Math.toDegrees(sweep), false, paint);
         canvas.restore();
     }
 

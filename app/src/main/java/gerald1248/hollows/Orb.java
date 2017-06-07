@@ -9,7 +9,10 @@ import android.graphics.Paint;
 
 public interface Orb {
     void draw(Canvas canvas, Paint paint);
+
     String getBannerText();
+
     String getAlertText();
+
     String[] getInfoLines();
 }

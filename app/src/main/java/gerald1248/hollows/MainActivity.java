@@ -184,7 +184,7 @@ public class MainActivity extends Activity {
 
     public void setLevelIndex(int i) {
         levelIndex = i;
-        if (i > highestLevelIndex ) {
+        if (i > highestLevelIndex) {
             highestLevelIndex = i;
         }
         if (loopMediaPlayer != null) {
@@ -192,11 +192,17 @@ public class MainActivity extends Activity {
         }
     }
 
-    public int getHighestLevelIndex() { return highestLevelIndex; }
+    public int getHighestLevelIndex() {
+        return highestLevelIndex;
+    }
 
-    public boolean getPlayAudio() { return playAudio; }
+    public boolean getPlayAudio() {
+        return playAudio;
+    }
 
-    public boolean getRedshift() { return redshift; }
+    public boolean getRedshift() {
+        return redshift;
+    }
 
     public int getMasterColor() {
         return masterColor;

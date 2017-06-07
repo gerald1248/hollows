@@ -16,7 +16,7 @@ public class GenericOrb extends QualifiedShape implements Orb {
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        canvas.drawCircle((float)this.x, (float)this.y, shape.radius, paint);
+        canvas.drawCircle((float) this.x, (float) this.y, shape.radius, paint);
     }
 
     @Override
@@ -25,7 +25,9 @@ public class GenericOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public String getAlertText() { return ""; }
+    public String getAlertText() {
+        return "";
+    }
 
     @Override
     public String[] getInfoLines() {

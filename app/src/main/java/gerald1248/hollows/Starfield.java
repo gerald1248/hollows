@@ -22,7 +22,7 @@ public class Starfield {
     }
 
     private Star[] stars = new Star[128];
-    private float side = Constants.MAX_MAP/2; //parallax effect: double foreground speed
+    private float side = Constants.MAX_MAP / 2; //parallax effect: double foreground speed
 
     public Starfield() {
         for (int i = 0; i < stars.length; i++) {
@@ -53,8 +53,9 @@ public class Starfield {
         canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
 
         // copy from offscreen canvas
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP/2, (int) Constants.MAX_MAP/2);
+        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
         canvas.drawBitmap(bitmap, null, r, paint);
 
         canvas.restore();
-    }}
+    }
+}

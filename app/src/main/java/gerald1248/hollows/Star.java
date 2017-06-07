@@ -9,9 +9,9 @@ import android.graphics.Paint;
 
 public class Star {
     public Star(boolean maj, float side) {
-        cx = (float)Math.random() * side;
-        cy = (float)Math.random() * side;
-        r = 0.5f + (float)Math.random();
+        cx = (float) Math.random() * side;
+        cy = (float) Math.random() * side;
+        r = 0.5f + (float) Math.random();
 
         if (maj) {
             r += 2.0f;

@@ -22,7 +22,7 @@ public class Player implements GameObject {
     public Player(Rect rectangle, float orient) {
         this.r = rectangle;
         this.orient = orient;
-        this.orient = -0.5f * (float)Math.PI;
+        this.orient = -0.5f * (float) Math.PI;
         this.scale = 1.0f;
         this.explode = false;
     }
@@ -30,9 +30,9 @@ public class Player implements GameObject {
     public void move(MotionEvent event, float delta) {
 
         if (delta < 0) {
-            this.orient -= Math.PI/40; // was 50
+            this.orient -= Math.PI / 40; // was 50
         } else if (delta > 0) {
-            this.orient += Math.PI/40; // was 50
+            this.orient += Math.PI / 40; // was 50
         }
     }
 
@@ -100,5 +100,7 @@ public class Player implements GameObject {
         return (scale > 20.0f);
     }
 
-    public boolean escaped() { return (scale < 0.05f); }
+    public boolean escaped() {
+        return (scale < 0.05f);
+    }
 }

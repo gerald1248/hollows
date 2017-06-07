@@ -12,10 +12,12 @@ import android.graphics.Rect;
 public class DangerZone {
     private int w = 40;
     private double angle = 0.0f;
-    private double delta = Math.PI/10.0;
+    private double delta = Math.PI / 10.0;
+
     public DangerZone() {
 
     }
+
     public void draw(Canvas canvas, float cx, float cy, int color) {
         angle = (angle + delta) % (Math.PI * 2.0);
         int alpha = 20 + (int) Math.round(20.0 * Math.sin(angle));
