@@ -79,14 +79,14 @@ public class LevelMap {
     public void drawGrid(Canvas canvas, int limit) {
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.STROKE);
-        float r = (float)limit/2;
-        for (int i = 0; i < limit/2; i += limit/20) {
+        float r = (float) limit / 2;
+        for (int i = 0; i < limit / 2; i += limit / 20) {
             canvas.drawCircle(r, r, i, paint);
         }
 
         Path path = new Path();
-        float f = (float)limit;
-        for (int i = 0; i < limit; i += limit/10) {
+        float f = (float) limit;
+        for (int i = 0; i < limit; i += limit / 10) {
             path.moveTo((float) i, 0.0f);
             path.lineTo((float) i, 2.0f * f);
             path.moveTo(0.0f, (float) i);
@@ -100,7 +100,7 @@ public class LevelMap {
         paint.setColor(Color.WHITE);
 
         if (Constants.DRAW_GRID) {
-            drawGrid(offscreenCanvas, (int)Constants.MAX_MAP);
+            drawGrid(offscreenCanvas, (int) Constants.MAX_MAP);
         }
 
         Resources resources = context.getResources();
@@ -111,7 +111,7 @@ public class LevelMap {
         int row = 0, col = 0;
         String level = levels[levelIndex].trim();
         int len = level.length();
-        float half = Constants.TILE_LENGTH/2;
+        float half = Constants.TILE_LENGTH / 2;
         for (int i = 0; i < len; i++) {
             char c = level.charAt(i);
             if (Character.isWhitespace(c)) {
@@ -135,22 +135,21 @@ public class LevelMap {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'n') {
-                addNextLevelOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                addNextLevelOrb(Constants.TILE_LENGTH / 2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'p') {
-                addPreviousLevelOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                addPreviousLevelOrb(Constants.TILE_LENGTH / 2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'r') {
-                addRedshiftOrb(Constants.TILE_LENGTH/2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
+                addRedshiftOrb(Constants.TILE_LENGTH / 2, Math.round(col * Constants.TILE_LENGTH + half), Math.round((float) row * Constants.TILE_LENGTH + half));
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
-            }
-            else if (c == 's') {
+            } else if (c == 's') {
                 startPoint = new Point(col * (int) Constants.TILE_LENGTH + (int) half, row * (int) Constants.TILE_LENGTH + (int) half);
                 // no need to update charMap - '.' is fine
             } else if (c == 'e') {
@@ -160,12 +159,12 @@ public class LevelMap {
                     charMap[row][col] = c;
                 }
             } else if (c == 'w') {
-                addTowerS((float)col * Constants.TILE_LENGTH + half, (float)row * Constants.TILE_LENGTH);
+                addTowerS((float) col * Constants.TILE_LENGTH + half, (float) row * Constants.TILE_LENGTH);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
             } else if (c == 'm') {
-                addTowerN((float)col * Constants.TILE_LENGTH + half, (float)row * Constants.TILE_LENGTH + Constants.TILE_LENGTH);
+                addTowerN((float) col * Constants.TILE_LENGTH + half, (float) row * Constants.TILE_LENGTH + Constants.TILE_LENGTH);
                 if (row < Constants.CHARMAP_LENGTH && col < Constants.CHARMAP_LENGTH) {
                     charMap[row][col] = '.';
                 }
@@ -235,11 +234,11 @@ public class LevelMap {
     }
 
     public void addTowerS(float cx, float cy) {
-        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/1.5f), (int)cx, (int)cy, (float)Math.PI/2)); // 6 o'clock
+        towers.add(new Tower(new Circle(Constants.TILE_LENGTH / 1.5f), (int) cx, (int) cy, (float) Math.PI / 2)); // 6 o'clock
     }
 
     public void addTowerN(float cx, float cy) {
-        towers.add(new Tower(new Circle(Constants.TILE_LENGTH/1.5f), (int)cx, (int)cy, -(float)Math.PI/2)); // 12 o'clock
+        towers.add(new Tower(new Circle(Constants.TILE_LENGTH / 1.5f), (int) cx, (int) cy, -(float) Math.PI / 2)); // 12 o'clock
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
@@ -256,7 +255,7 @@ public class LevelMap {
 
         // now draw towers - these aren't physical objects in the game
         for (QualifiedShape qs : towers) {
-            Tower t = (Tower)qs;
+            Tower t = (Tower) qs;
             canvas.drawCircle(t.x, t.y, t.shape.radius, paint);
         }
 
@@ -299,8 +298,8 @@ public class LevelMap {
             float x = collisionVertices[i].x;
             float y = collisionVertices[i].y;
 
-            int row = (int)Math.floor(y / Constants.TILE_LENGTH);
-            int col = (int)Math.floor(x / Constants.TILE_LENGTH);
+            int row = (int) Math.floor(y / Constants.TILE_LENGTH);
+            int col = (int) Math.floor(x / Constants.TILE_LENGTH);
 
             if (row < 0 || row >= 50 || col < 0 || col >= 50) {
                 continue;
@@ -323,7 +322,7 @@ public class LevelMap {
     public QualifiedShape detectShapeCollision(float cx, float cy, float r) {
         // all towers are (half-)circles
         for (QualifiedShape qs : towers) {
-            Tower t = (Tower)qs;
+            Tower t = (Tower) qs;
             float r2 = t.shape.radius;
             float x2 = t.x;
             float y2 = t.y;

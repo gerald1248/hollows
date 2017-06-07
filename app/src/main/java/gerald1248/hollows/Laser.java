@@ -61,8 +61,8 @@ public class Laser implements Projectile {
         paint.setStrokeWidth(4.0f);
         paint.setColor(color);
 
-        x = cx + d * (float)Math.cos((double)orient);
-        y = cy + d * (float)Math.sin((double)orient);
+        x = cx + d * (float) Math.cos((double) orient);
+        y = cy + d * (float) Math.sin((double) orient);
 
         paint.setStyle(Paint.Style.FILL);
 

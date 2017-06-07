@@ -35,7 +35,9 @@ public class RedshiftOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public String getAlertText() { return ""; }
+    public String getAlertText() {
+        return "";
+    }
 
     @Override
     public String[] getInfoLines() {

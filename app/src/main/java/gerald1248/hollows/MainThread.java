@@ -61,9 +61,10 @@ public class MainThread extends Thread {
             waitTime = targetTime - timeMillis;
 
             try {
-                Log.d(TAG, String.format("run (%d remaining)", waitTime));
                 if (waitTime > 0) {
                     sleep(waitTime);
+                } else if (Constants.LOG) {
+                    Log.d(TAG, String.format("run (%d overrun)", waitTime));
                 }
             } catch (Exception e) {
                 e.printStackTrace();

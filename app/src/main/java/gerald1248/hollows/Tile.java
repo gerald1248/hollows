@@ -22,8 +22,8 @@ public class Tile {
         this.type = type;
         this.row = row;
         this.col = col;
-        this.left = (float)this.col * side;
-        this.top = (float)this.row * side;
+        this.left = (float) this.col * side;
+        this.top = (float) this.row * side;
         this.right = this.left + this.side;
         this.bottom = this.top + this.side;
     }
@@ -45,7 +45,7 @@ public class Tile {
             return;
         }
 
-        float rand = (float)Math.random();
+        float rand = (float) Math.random();
         float mid = rand * side;
         float elev = 0.5f + rand * maxElev;
         float sign = (rand > 0.5) ? -1.0f : 1.0f;
@@ -66,7 +66,7 @@ public class Tile {
                 break;
             case '|': //approx. for backslash
                 p.moveTo(left, top);
-                p.lineTo(left + side/2 + elev * sign, top + side/2);
+                p.lineTo(left + side / 2 + elev * sign, top + side / 2);
                 p.lineTo(right, bottom);
                 p.lineTo(left + mid, bottom + elev);
                 p.lineTo(left, bottom);
@@ -76,7 +76,7 @@ public class Tile {
                 break;
             case '/':
                 p.moveTo(left, bottom);
-                p.lineTo(left + side/2 + elev * sign, top + side/2);
+                p.lineTo(left + side / 2 + elev * sign, top + side / 2);
                 p.lineTo(right, top);
                 p.lineTo(right + elev, top + mid);
                 p.lineTo(right, bottom);
@@ -90,7 +90,7 @@ public class Tile {
                 p.lineTo(right, top);
                 p.lineTo(right + elev, top + mid);
                 p.lineTo(right, bottom);
-                p.lineTo(left + side/2 + sign * elev, top + side/2);
+                p.lineTo(left + side / 2 + sign * elev, top + side / 2);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
@@ -98,25 +98,25 @@ public class Tile {
                 p.moveTo(left, top);
                 p.lineTo(left + mid, top - elev);
                 p.lineTo(right, top);
-                p.lineTo(left + side/2, top + side/2 + sign * elev);
+                p.lineTo(left + side / 2, top + side / 2 + sign * elev);
                 p.lineTo(left, bottom);
-                p.lineTo(left - elev, top + side/2);
+                p.lineTo(left - elev, top + side / 2);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
             case '^':
                 p.moveTo(left, bottom);
-                p.lineTo(left + side/2 + sign * elev, top + sign * elev);
+                p.lineTo(left + side / 2 + sign * elev, top + sign * elev);
                 p.lineTo(right, bottom);
-                p.lineTo(left + side/2, bottom + elev);
+                p.lineTo(left + side / 2, bottom + elev);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
             case 'v':
                 p.moveTo(left, top);
-                p.lineTo(left + side/2, top - elev);
+                p.lineTo(left + side / 2, top - elev);
                 p.lineTo(right, top);
-                p.lineTo(left + side/2 + sign * elev, bottom + sign * elev);
+                p.lineTo(left + side / 2 + sign * elev, bottom + sign * elev);
                 p.close();
                 canvas.drawPath(p, paint);
                 break;
@@ -124,6 +124,7 @@ public class Tile {
                 break;
         }
     }
+
     static public boolean detectCollision(char type, float x, float y) {
         switch (type) {
             case '+':

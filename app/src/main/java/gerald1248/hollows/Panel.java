@@ -36,6 +36,7 @@ import org.magnos.impulse.Vec2;
 public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     public ImpulseScene impulse = null;
     public Body body = null;
+
     public enum PanelState {
         Paused, Running
     }
@@ -98,7 +99,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         startPoint = levelMap.getStartPoint();
         endPoint = levelMap.getEndPoint();
 
-        homingDevice = new HomingDevice(Constants.TILE_LENGTH, Constants.SCREEN_HEIGHT - Constants.TILE_LENGTH, Constants.TILE_LENGTH/2);
+        homingDevice = new HomingDevice(Constants.TILE_LENGTH, Constants.SCREEN_HEIGHT - Constants.TILE_LENGTH, Constants.TILE_LENGTH / 2);
 
         adjustFontSizes();
 
@@ -118,7 +119,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void initBody() {
         body = impulse.add(new Circle(Constants.PLAYER_RADIUS), (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
-        body.setOrient((float)-Math.PI/2);
+        body.setOrient((float) -Math.PI / 2);
         initBodyPhysics(body);
 
         //currently mass does not change as the physics don't change
@@ -261,7 +262,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         float y1 = body.position.y;
         if (frames % Constants.TOWER_INTERVAL_FRAMES == 0) {
             for (QualifiedShape qs : levelMap.getTowers()) {
-                Tower t = (Tower)qs;
+                Tower t = (Tower) qs;
 
                 //first check player is within detection field
                 //currently only N and S orientations are used
@@ -282,8 +283,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     continue;
                 }
 
-                float angle = (float)Math.atan2(x1 - x2, -(y1 - y2));
-                angle -= (float)Math.PI/2;
+                float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
+                angle -= (float) Math.PI / 2;
                 Laser l = new Laser(x2, y2, angle, 30);
                 l.setObserver(body);
                 l.setVelocityFactor(0.5f);
@@ -300,7 +301,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     float y2 = qs.y;
 
                     if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
-                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float)Math.PI, 8);
+                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 8);
                         w.setObserver(body);
                         w.setVelocityFactor(0.5f);
                         waves.add(w);
@@ -480,7 +481,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (qs == null) {
                 //try half interval just in case, and only for player's own lasers
                 //so step (and thus velocity) can be high without loss of precision
-                qs = levelMap.detectShapeCollision((x + l.prevX)/2, (y + l.prevY)/2, r);
+                qs = levelMap.detectShapeCollision((x + l.prevX) / 2, (y + l.prevY) / 2, r);
             }
 
             if (qs != null) {
@@ -491,17 +492,17 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 waves.add(wave);
                 detonate();
 
-                Orb o = (Orb)qs;
+                Orb o = (Orb) qs;
                 if (o instanceof Tower) {
-                    levelMap.removeTower((Tower)o);
+                    levelMap.removeTower((Tower) o);
                     continue;
                 } else if (o instanceof AudioOrb) {
-                    MainActivity mainActivity = (MainActivity)context;
+                    MainActivity mainActivity = (MainActivity) context;
                     mainActivity.toggleAudio();
                     setAudioAlert(mainActivity.getPlayAudio());
                     continue;
                 } else if (o instanceof NextLevelOrb) {
-                    MainActivity mainActivity = (MainActivity)context;
+                    MainActivity mainActivity = (MainActivity) context;
                     int highestLevelIndex = mainActivity.getHighestLevelIndex();
                     if (highestLevelIndex > levelIndex) {
                         player.escape(true);
@@ -522,7 +523,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     }
                     continue;
                 } else if (o instanceof RedshiftOrb) {
-                    MainActivity mainActivity = (MainActivity)context;
+                    MainActivity mainActivity = (MainActivity) context;
                     mainActivity.toggleRedshift();
                     setRedshiftAlert(mainActivity.getRedshift());
                     continue;
@@ -591,7 +592,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         //add 0.5r tolerance to avoid flicker
-        Orb o = (Orb)levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
+        Orb o = (Orb) levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
         if (state == PanelState.Paused) {
             // do nothing; bannerText has been set
         } else if (o == null && state != PanelState.Paused) {
@@ -617,7 +618,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         canvas.drawColor(Color.rgb(bgComponent, bgComponent, bgComponent));
 
-        MainActivity mainActivity = (MainActivity)context;
+        MainActivity mainActivity = (MainActivity) context;
         int masterColor = mainActivity.getMasterColor();
         starfield.draw(canvas, -body.position.x, -body.position.y, masterColor);
         levelMap.draw(canvas, -body.position.x, -body.position.y, masterColor);
@@ -631,8 +632,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         updateInfo(canvas);
 
         // update homing device - angle to endPoint
-        float angle = (float)Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float)Math.PI/2;
-        homingDevice.update((targetsRemaining == 0) ? (float)-Math.PI/2 : angle);
+        float angle = (float) Math.atan2(body.position.x - endPoint.x, -(body.position.y - endPoint.y)) + (float) Math.PI / 2;
+        homingDevice.update((targetsRemaining == 0) ? (float) -Math.PI / 2 : angle);
         homingDevice.draw(canvas, masterColor);
 
         //don't animate lasers etc. in pause mode, so exit here if the panel has been paused
@@ -682,16 +683,16 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         s = String.format(r.getString(R.string.level_format), levelIndex + 1);
         TextUtils.draw(canvas, s, fontSizeMediumAdjusted, 12.0f, fontSizeMediumAdjusted + 2.0f, Paint.Align.LEFT, color, typeface, false);
 
-        TextUtils.draw(canvas, bannerText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
+        TextUtils.draw(canvas, bannerText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT * 0.25f, Paint.Align.CENTER, color, typeface, false);
 
         float yOffset = 0.0f;
         for (String line : infoLines) {
-            TextUtils.draw(canvas, line, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
+            TextUtils.draw(canvas, line, fontSizeMediumAdjusted, Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT * 0.7f + yOffset, Paint.Align.CENTER, color, typeface, false);
             yOffset += fontSizeMediumAdjusted * 1.66f; // was: Constants.FONT_SIZE_LARGE and so just below *= 2.0f
         }
 
         if (alertFrames > 0) {
-            TextUtils.draw(canvas, alertText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT/2, Paint.Align.CENTER, color, typeface, false);
+            TextUtils.draw(canvas, alertText, fontSizeLargeAdjusted, Constants.SCREEN_WIDTH / 2, Constants.SCREEN_HEIGHT / 2, Paint.Align.CENTER, color, typeface, false);
             alertFrames--;
         }
 
@@ -762,8 +763,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         float w1 = p1.measureText(r.getString(R.string.completion_alert));
 
         if (w1 > w) { // too large
-            fontSizeLargeAdjusted = Math.round((double) (Constants.FONT_SIZE_LARGE * (w/w1)));
-        } else if (w/w1 > 2.0f) { // comparatively small
+            fontSizeLargeAdjusted = Math.round((double) (Constants.FONT_SIZE_LARGE * (w / w1)));
+        } else if (w / w1 > 2.0f) { // comparatively small
             fontSizeLargeAdjusted *= 1.5f;
         }
 
@@ -773,7 +774,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         float w2 = p2.measureText(r.getString(R.string.info_line1));
 
         if (w2 > w) { // too large
-            fontSizeMediumAdjusted = Math.round((double) (Constants.FONT_SIZE_MEDIUM * (w/w1)));
+            fontSizeMediumAdjusted = Math.round((double) (Constants.FONT_SIZE_MEDIUM * (w / w1)));
         }
     }
 }

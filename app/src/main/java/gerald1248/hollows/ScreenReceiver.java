@@ -21,10 +21,14 @@ public class ScreenReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            Log.d(TAG, "onReceive (off)");
+            if (Constants.LOG) {
+                Log.d(TAG, "onReceive (off)");
+            }
             state = ScreenBroadcast.Off;
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-            Log.d(TAG, "onReceive (on)");
+            if (Constants.LOG) {
+                Log.d(TAG, "onReceive (on)");
+            }
             state = ScreenBroadcast.On;
             MainActivity mainActivity = (MainActivity) context;
             if (mainActivity != null) {

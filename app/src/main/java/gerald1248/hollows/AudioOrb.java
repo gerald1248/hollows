@@ -25,8 +25,8 @@ public class AudioOrb extends QualifiedShape implements Orb {
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
-        float cx = (float)this.x;
-        float cy = (float)this.y;
+        float cx = (float) this.x;
+        float cy = (float) this.y;
         canvas.drawCircle(cx, cy, shape.radius, paint);
         TextUtils.draw(canvas, context.getResources().getString(R.string.audio_label), Constants.FONT_SIZE_MEDIUM, cx, cy, Paint.Align.CENTER, Color.TRANSPARENT, typeface, true);
     }
@@ -37,7 +37,9 @@ public class AudioOrb extends QualifiedShape implements Orb {
     }
 
     @Override
-    public String getAlertText() { return ""; }
+    public String getAlertText() {
+        return "";
+    }
 
     @Override
     public String[] getInfoLines() {

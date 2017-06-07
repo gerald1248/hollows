@@ -23,7 +23,7 @@ public class HomingDevice implements GameObject {
     @Override
     public void draw(Canvas canvas, int color) {
         canvas.save();
-        canvas.rotate((float)Math.toDegrees(orient), cx, cy);
+        canvas.rotate((float) Math.toDegrees(orient), cx, cy);
         Paint paint = new Paint();
         paint.setColor(Color.GRAY);
         canvas.drawCircle(cx, cy, r, paint);
@@ -31,9 +31,9 @@ public class HomingDevice implements GameObject {
         paint.setColor(color);
         Path p = new Path();
         p.moveTo(cx + r, cy);
-        p.lineTo(cx - r, cy + r/3);
-        p.lineTo(cx - r + r/3, cy);
-        p.lineTo(cx - r, cy - r/3);
+        p.lineTo(cx - r, cy + r / 3);
+        p.lineTo(cx - r + r / 3, cy);
+        p.lineTo(cx - r, cy - r / 3);
         p.close();
         canvas.drawPath(p, paint);
 
