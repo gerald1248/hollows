@@ -210,7 +210,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         frames++;
 
-        // potential race condition, so use ConcurrentHashMap
         for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
             Integer key = entry.getKey();
             MultitouchState value = entry.getValue();

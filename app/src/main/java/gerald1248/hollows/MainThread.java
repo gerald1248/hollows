@@ -42,9 +42,9 @@ public class MainThread extends Thread {
             try {
                 canvas = this.surfaceHolder.lockCanvas();
                 synchronized (surfaceHolder) {
+                    panel.tick();
                     panel.update();
                     panel.draw(canvas);
-                    panel.tick(); //1.0.5
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -76,7 +76,6 @@ public class MainThread extends Thread {
                 frameCount = 0;
                 totalTime = 0;
             }
-            //panel.tick();
         }
     }
 }
