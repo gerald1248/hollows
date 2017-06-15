@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
-import static android.graphics.Bitmap.Config.ALPHA_8;
 import static android.graphics.Bitmap.createBitmap;
 
 /**
@@ -28,7 +27,7 @@ public class Starfield {
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(i < 2, side); // make first two major stars
         }
-        bitmap = createBitmap((int) side, (int) side, ALPHA_8);
+        bitmap = createBitmap((int) side, (int) side, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
@@ -41,20 +40,20 @@ public class Starfield {
     public void draw(Canvas canvas, float cx, float cy, int color) {
         //parallax effect: the bitmap is half the size of the game map
         //need to reduce scrolling speed for starfield by half
-        //TODO: more than half preferable?
         cx /= 2;
         cy /= 2;
 
         Paint paint = new Paint();
-        paint.setStrokeWidth((float) 2.0);
         paint.setColor(color);
 
         canvas.save();
-        canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
-
-        // copy from offscreen canvas
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2);
-        canvas.drawBitmap(bitmap, null, r, paint);
+        int x = (int) cx;
+        int y = (int) cy;
+        int w = Constants.SCREEN_WIDTH;
+        int h = Constants.SCREEN_HEIGHT;
+        Rect rSrc = new Rect(x - w/2, y - h/2, x + w/2, y + h/2);
+        Rect rDest = new Rect(0, 0, w, h);
+        canvas.drawBitmap(bitmap, rSrc, rDest, paint);
 
         canvas.restore();
     }

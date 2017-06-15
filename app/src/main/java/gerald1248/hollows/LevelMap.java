@@ -21,7 +21,6 @@ import org.magnos.impulse.Shape;
 import org.magnos.impulse.Vec2;
 import org.magnos.impulse.ImpulseScene;
 
-import static android.graphics.Bitmap.Config.ALPHA_8;
 import static android.graphics.Bitmap.createBitmap;
 
 /**
@@ -30,6 +29,8 @@ import static android.graphics.Bitmap.createBitmap;
  */
 
 public class LevelMap {
+    private static final String TAG = LevelMap.class.getSimpleName();
+
     LinkedList<QualifiedShape> shapes = new LinkedList<QualifiedShape>();
     LinkedList<QualifiedShape> towers = new LinkedList<QualifiedShape>();
     private char[][] charMap = new char[Constants.CHARMAP_LENGTH][Constants.CHARMAP_LENGTH];
@@ -52,7 +53,7 @@ public class LevelMap {
         this.typeface = typeface;
         this.levelIndex = levelIndex;
 
-        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, ALPHA_8);
+        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, Bitmap.Config.ARGB_8888);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
@@ -243,20 +244,26 @@ public class LevelMap {
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
         Paint paint = new Paint();
-        paint.setStrokeWidth((float) 2.0);
         paint.setColor(color);
 
         canvas.save();
-        canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
 
-        // copy from offscreen canvas
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
-        canvas.drawBitmap(offscreenBitmap, null, r, paint);
+        int x = (int) cx;
+        int y = (int) cy;
+        int w = Constants.SCREEN_WIDTH;
+        int h = Constants.SCREEN_HEIGHT;
+        Rect rSrc = new Rect(x - w/2, y - h/2, x + w/2, y + h/2);
+        Rect rDest = new Rect(0, 0, w, h);
+        canvas.drawBitmap(offscreenBitmap, rSrc, rDest, paint);
 
         // now draw towers - these aren't physical objects in the game
         for (QualifiedShape qs : towers) {
             Tower t = (Tower) qs;
-            canvas.drawCircle(t.x, t.y, t.shape.radius, paint);
+            if (Collision.circleRect(t.x, t.y, (int) t.shape.radius, rSrc)) {
+                int adjX = t.x - x + w/2;
+                int adjY = t.y - y + h/2;
+                canvas.drawCircle(adjX, adjY, t.shape.radius, paint);
+            }
         }
 
         canvas.restore();

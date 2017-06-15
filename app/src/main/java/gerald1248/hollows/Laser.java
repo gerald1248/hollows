@@ -14,6 +14,8 @@ import org.magnos.impulse.Vec2;
  */
 
 public class Laser implements Projectile {
+    public float cx;
+    public float cy;
     public float r = 8.0f;
     public float d = 0.0f;
     public float x, y, prevX, prevY;
@@ -22,8 +24,6 @@ public class Laser implements Projectile {
     public float orient;
 
     // fixed params
-    private float cx;
-    private float cy;
     private int stepsRemaining;
     private float dd = Constants.PLAYER_RADIUS;
     private Body observer = null;
@@ -65,13 +65,6 @@ public class Laser implements Projectile {
         y = cy + d * (float) Math.sin((double) orient);
 
         paint.setStyle(Paint.Style.FILL);
-
-        //paint.setColor(Color.argb(64, 255, 255, 255));
-        paint.setAlpha(64);
-        canvas.drawCircle(x, y, r * 2, paint);
-
-        //paint.setColor(Color.WHITE);
-        paint.setAlpha(255);
         canvas.drawCircle(x, y, r, paint);
         canvas.restore();
     }

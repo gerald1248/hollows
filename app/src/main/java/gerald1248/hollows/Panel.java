@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.magnos.impulse.Body;
 import org.magnos.impulse.Circle;
@@ -220,7 +218,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
                 // visual indicator if thrust not already applied
                 if (value.state != MultitouchState.Motion.Thrust) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 4);
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 3);
                     waves.add(w);
 
                     if (waves.size() > Constants.MAX_PROJECTILES) {
@@ -300,7 +298,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     float y2 = qs.y;
 
                     if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
-                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 8);
+                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 7);
                         w.setObserver(body);
                         w.setVelocityFactor(0.5f);
                         waves.add(w);
@@ -486,7 +484,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (qs != null) {
                 laserIt.remove();
 
-                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
+                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 6);
                 wave.setObserver(body);
                 waves.add(wave);
                 detonate();
@@ -532,7 +530,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             //finally check if laser has hit solid matter
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
-                Wave wave = new Wave(x, y, orient, 2.0f * (float) Math.PI, 4);
+                Wave wave = new Wave(x, y, orient, 2.0f * (float) Math.PI, 3);
                 wave.setObserver(body);
                 wave.setVelocityFactor(0.5f);
                 waves.add(wave);
@@ -619,12 +617,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         MainActivity mainActivity = (MainActivity) context;
         int masterColor = mainActivity.getMasterColor();
-        starfield.draw(canvas, -body.position.x, -body.position.y, masterColor);
-        levelMap.draw(canvas, -body.position.x, -body.position.y, masterColor);
+
+        starfield.draw(canvas, body.position.x, body.position.y, masterColor);
+        levelMap.draw(canvas, body.position.x, body.position.y, masterColor);
 
         player.draw(canvas, masterColor);
         if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, -body.position.x, -body.position.y, masterColor);
+            dangerZone.draw(canvas, body.position.x, body.position.y, masterColor);
         }
 
         // display targets remaining
@@ -640,12 +639,18 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             return;
         }
 
+        int x = (int) body.position.x;
+        int y = (int) body.position.y;
+        int w2 = Constants.SCREEN_WIDTH/2;
+        int h2 = Constants.SCREEN_HEIGHT/2;
+        Rect rect = new Rect(x - w2, y - h2, x + w2, y + h2);
+
         Iterator<Wave> it = waves.iterator();
         while (it.hasNext()) {
             Wave w = it.next();
             if (w.isDone()) {
                 it.remove();
-            } else {
+            } else if (Collision.circleRect((int) w.cx, (int) w.cy, (int) w.r, rect)) {
                 w.draw(canvas, masterColor);
             }
         }
@@ -655,7 +660,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             Laser l = laserIt.next();
             if (l.isDone()) {
                 laserIt.remove();
-            } else {
+            } else if (Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rect)) {
                 l.draw(canvas, masterColor);
             }
         }
@@ -665,7 +670,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             Laser l = laserIt.next();
             if (l.isDone()) {
                 laserIt.remove();
-            } else {
+            } else if (Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rect)) {
                 l.draw(canvas, masterColor);
             }
         }

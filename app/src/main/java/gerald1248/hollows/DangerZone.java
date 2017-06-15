@@ -27,11 +27,13 @@ public class DangerZone {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth((float) w);
 
-        Rect r = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
-
+        Rect rNorth = new Rect(0, 0, (int) Constants.MAX_MAP, w);
+        Rect rEast = new Rect((int) Constants.MAX_MAP - w, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+        Rect rSouth = new Rect(0, (int) Constants.MAX_MAP - w, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+        Rect rWest = new Rect(0, 0, w, (int) Constants.MAX_MAP);
         canvas.save();
-        canvas.translate(cx + Constants.SCREEN_WIDTH / 2, cy + Constants.SCREEN_HEIGHT / 2);
-        canvas.drawRect(r, paint);
+        //zzz
+        //canvas.drawRect(r, paint);
         canvas.restore();
     }
 }

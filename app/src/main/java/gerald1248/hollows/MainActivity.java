@@ -16,8 +16,6 @@ import android.view.WindowManager;
 
 import java.io.IOException;
 
-import static gerald1248.hollows.MainThread.canvas;
-
 public class MainActivity extends Activity {
 
     private LoopMediaPlayer loopMediaPlayer = null;

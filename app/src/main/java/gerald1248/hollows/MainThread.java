@@ -1,6 +1,7 @@
 package gerald1248.hollows;
 
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.view.SurfaceHolder;
 import android.util.Log;
 
@@ -25,6 +26,10 @@ public class MainThread extends Thread {
     public MainThread(SurfaceHolder surfaceHolder, Panel panel) {
         super();
         this.surfaceHolder = surfaceHolder;
+
+        //exp
+        this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        this.surfaceHolder.setFormat(PixelFormat.RGBA_8888);
         this.panel = panel;
     }
 
