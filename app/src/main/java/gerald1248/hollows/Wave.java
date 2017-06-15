@@ -61,8 +61,6 @@ public class Wave implements Projectile {
         Paint paint = new Paint();
         paint.setStrokeWidth(2.0f);
         paint.setColor(color);
-        //int alpha = (Math.round(stepsRemaining * 100 / steps) * 5) % 255;
-        //paint.setAlpha(alpha); // opaque then tail off quickly
         paint.setStyle(Paint.Style.STROKE);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
         canvas.drawArc(rect, (float) Math.toDegrees(orient - sweep / 2), (float) Math.toDegrees(sweep), false, paint);
