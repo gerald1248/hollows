@@ -27,9 +27,7 @@ public class MainThread extends Thread {
         super();
         this.surfaceHolder = surfaceHolder;
 
-        //exp
-        this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-        this.surfaceHolder.setFormat(PixelFormat.RGBA_8888);
+        this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
         this.panel = panel;
     }
 
@@ -47,7 +45,6 @@ public class MainThread extends Thread {
             try {
                 canvas = this.surfaceHolder.lockCanvas();
                 synchronized (surfaceHolder) {
-                    panel.tick();
                     panel.update();
                     panel.draw(canvas);
                 }

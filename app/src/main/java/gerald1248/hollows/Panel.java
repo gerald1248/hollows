@@ -199,6 +199,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         detonateFramesRemaining = Constants.FRAMES_DETONATE;
     }
 
+    /*
     // tick() is called from main loop when ready to draw frame
     // determines state of motion events
     public void tick() {
@@ -307,6 +308,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
     }
+    */
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -432,6 +434,93 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         if (state == PanelState.Paused) {
             return;
         }
+
+        // first manage touch event state
+        // formerly handled separately in tick()
+        frames++;
+
+        for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
+            Integer key = entry.getKey();
+            MultitouchState value = entry.getValue();
+            int ticks = value.ticks;
+            value.ticks = ticks + 1;
+            multitouchMap.put(key, value);
+
+            if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
+                // visual indicator if thrust not already applied
+                if (value.state != MultitouchState.Motion.Thrust) {
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 3);
+                    waves.add(w);
+
+                    if (waves.size() > Constants.MAX_PROJECTILES) {
+                        waves.remove();
+                    }
+                }
+
+                // apply thrust
+                value.state = MultitouchState.Motion.Thrust;
+                multitouchMap.put(key, value);
+
+                float orient = body.orient;
+                float mult = 1500000.0F;
+                float c = (float) Math.cos(orient);
+                float s = (float) Math.sin(orient);
+
+                Vec2 v = new Vec2(mult * c, mult * s);
+                body.applyForce(v);
+            }
+        }
+        impulse.step(); // calc new values
+
+        // force fixed orient
+        body.setOrient(player.orient);
+
+        //handle game over
+        if (player.exploded()) {
+            targetsRemaining = initialTargetsRemaining;
+            reset(false);
+        } else if (player.escaped()) {
+            //TODO: advance to next level
+            targetsRemaining = initialTargetsRemaining;
+            reset(true);
+        }
+
+        float x1 = body.position.x;
+        float y1 = body.position.y;
+        if (frames % Constants.TOWER_INTERVAL_FRAMES == 0) {
+            for (QualifiedShape qs : levelMap.getTowers()) {
+                Tower t = (Tower) qs;
+
+                //first check player is within detection field
+                //currently only N and S orientations are used
+                float x2 = t.x;
+                float y2 = t.y;
+                if (t.orient < 0.0f) {
+                    if (y2 < y1) {
+                        continue;
+                    }
+                } else {
+                    if (y2 > y1) {
+                        continue;
+                    }
+                }
+
+                //1.0.5
+                if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
+                    continue;
+                }
+
+                float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
+                angle -= (float) Math.PI / 2;
+                Laser l = new Laser(x2, y2, angle, 30);
+                l.setObserver(body);
+                l.setVelocityFactor(0.5f);
+                enemyLasers.add(l);
+            }
+        }
+
+        // now deal with collisions etc.
+
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
@@ -553,6 +642,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             float r = l.r;
             float dFromTower = l.d;
             float orient = l.orient;
+
             //2D bodies - NB: tower laser starts from shape, so set minimum radius
             if (dFromTower > Constants.TILE_LENGTH * 2) {
                 if (levelMap.detectCollision(x, y, r, orient)) {
@@ -577,7 +667,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         if (targetsRemaining > 0) {
             //TODO: move proximity check to specialized Orb class
             //finally, check if near endPoint
-            float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
+            // x1 and y1 are known
+            float x2 = endPoint.x, y2 = endPoint.y;
 
             if (Collision.circleCircle(x1, y1, x2, y2, Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                 targetsRemaining -= 2;
@@ -596,9 +687,20 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             bannerText = "";
             infoLines = new String[]{};
         } else {
+            //banner display
             bannerText = o.getBannerText();
             infoLines = o.getInfoLines();
+
+            //pulse
+            if (frames % Constants.PULSE_INTERVAL_FRAMES == 0 && (o instanceof BaseOrb || o instanceof TitleOrb || o instanceof AudioOrb || o instanceof RedshiftOrb)) {
+                QualifiedShape qs = (QualifiedShape) o;
+                Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 7);
+                w.setObserver(body);
+                w.setVelocityFactor(0.5f);
+                waves.add(w);
+            }
         }
+
     }
 
     public void draw(Canvas canvas) {

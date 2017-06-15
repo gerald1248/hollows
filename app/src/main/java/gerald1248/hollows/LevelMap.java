@@ -48,12 +48,23 @@ public class LevelMap {
 
     private int levelIndex = 0;
 
+    private Rect rectMap, rectScreen;
+
+    private Paint paint;
+    private Path path;
+
+
     public LevelMap(Context context, Typeface typeface, int levelIndex) {
         this.context = context;
         this.typeface = typeface;
         this.levelIndex = levelIndex;
 
-        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, Bitmap.Config.ARGB_8888);
+        rectMap = new Rect(0, 0, (int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
+        rectScreen = new Rect(0, 0, 0, 0);
+        paint = new Paint();
+        path = new Path();
+
+        offscreenBitmap = createBitmap((int) Constants.MAX_MAP, (int) Constants.MAX_MAP, Bitmap.Config.ALPHA_8);
         offscreenCanvas = new Canvas(offscreenBitmap);
         startPoint = new Point((int) Constants.MAX_MAP / 2, (int) Constants.MAX_MAP / 2); //sane default
         endPoint = new Point((int) Constants.MAX_MAP, (int) Constants.MAX_MAP);
@@ -78,14 +89,14 @@ public class LevelMap {
     }
 
     public void drawGrid(Canvas canvas, int limit) {
-        Paint paint = new Paint();
+        paint.reset();
         paint.setStyle(Paint.Style.STROKE);
         float r = (float) limit / 2;
         for (int i = 0; i < limit / 2; i += limit / 20) {
             canvas.drawCircle(r, r, i, paint);
         }
 
-        Path path = new Path();
+        path.reset();
         float f = (float) limit;
         for (int i = 0; i < limit; i += limit / 10) {
             path.moveTo((float) i, 0.0f);
@@ -97,7 +108,7 @@ public class LevelMap {
     }
 
     public void drawOffscreen() {
-        Paint paint = new Paint();
+        paint.reset();
         paint.setColor(Color.WHITE);
 
         if (Constants.DRAW_GRID) {
@@ -243,30 +254,43 @@ public class LevelMap {
     }
 
     public void draw(Canvas canvas, float cx, float cy, int color) {
-        Paint paint = new Paint();
+        paint.reset();
         paint.setColor(color);
-
-        canvas.save();
 
         int x = (int) cx;
         int y = (int) cy;
         int w = Constants.SCREEN_WIDTH;
         int h = Constants.SCREEN_HEIGHT;
-        Rect rSrc = new Rect(x - w/2, y - h/2, x + w/2, y + h/2);
-        Rect rDest = new Rect(0, 0, w, h);
-        canvas.drawBitmap(offscreenBitmap, rSrc, rDest, paint);
 
+        rectScreen.set(x - w/2, y - h/2, x + w/2, y + h/2);
+
+        /*
+        // this excerpt draws only the required rect,
+        // but strangely performance degrades significantly
+        // it recovers when color depth 8888 is used, but
+        // that in turn uses too much memory given the large
+        // 5000x5000 game map
+        Rect rDest = new Rect(0, 0, w, h);
+        canvas.drawBitmap(offscreenBitmap, rectScreen, rDest, paint);
+        */
+
+        canvas.save();
+        canvas.translate(-x + w/2, -y + h/2);
+        canvas.drawBitmap(offscreenBitmap, null, rectMap, paint);
+        canvas.restore();
+
+        canvas.save();
         // now draw towers - these aren't physical objects in the game
         for (QualifiedShape qs : towers) {
             Tower t = (Tower) qs;
-            if (Collision.circleRect(t.x, t.y, (int) t.shape.radius, rSrc)) {
+            if (Collision.circleRect(t.x, t.y, (int) t.shape.radius, rectScreen)) {
                 int adjX = t.x - x + w/2;
                 int adjY = t.y - y + h/2;
                 canvas.drawCircle(adjX, adjY, t.shape.radius, paint);
             }
         }
-
         canvas.restore();
+
     }
 
     public void initStaticShapes(ImpulseScene impulse) {

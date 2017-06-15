@@ -23,13 +23,19 @@ public class Starfield {
     private Star[] stars = new Star[128];
     private float side = Constants.MAX_MAP / 2; //parallax effect: double foreground speed
 
+    private Rect rectMap;
+    private Paint paint;
+
     public Starfield() {
+        rectMap = new Rect(0, 0, (int) Constants.MAX_MAP/2, (int) Constants.MAX_MAP/2);
+        paint = new Paint();
+
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(i < 2, side); // make first two major stars
         }
-        bitmap = createBitmap((int) side, (int) side, Bitmap.Config.ARGB_8888);
+        bitmap = createBitmap((int) side, (int) side, Bitmap.Config.ALPHA_8);
         canvas = new Canvas(bitmap);
-        Paint paint = new Paint();
+
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
         for (int i = 0; i < stars.length; i++) {
@@ -43,18 +49,12 @@ public class Starfield {
         cx /= 2;
         cy /= 2;
 
-        Paint paint = new Paint();
+        paint.reset();
         paint.setColor(color);
 
         canvas.save();
-        int x = (int) cx;
-        int y = (int) cy;
-        int w = Constants.SCREEN_WIDTH;
-        int h = Constants.SCREEN_HEIGHT;
-        Rect rSrc = new Rect(x - w/2, y - h/2, x + w/2, y + h/2);
-        Rect rDest = new Rect(0, 0, w, h);
-        canvas.drawBitmap(bitmap, rSrc, rDest, paint);
-
+        canvas.translate(-cx + Constants.SCREEN_WIDTH / 2, -cy + Constants.SCREEN_HEIGHT / 2);
+        canvas.drawBitmap(bitmap, null, rectMap, paint);
         canvas.restore();
     }
 }
