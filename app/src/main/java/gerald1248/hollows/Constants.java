@@ -13,7 +13,7 @@ public class Constants {
     public static int FRAMES_DETONATE = 10;
     public static int MAX_FPS = 30;
     public static int MAX_POINTER = 5;
-    public static int MAX_PROJECTILES = 2;
+    public static int MAX_PROJECTILES = 3;
     public static int CHARMAP_LENGTH = 50;
     public static int TOWER_INTERVAL_FRAMES = 100;
     public static int PULSE_INTERVAL_FRAMES = 120;
@@ -27,5 +27,5 @@ public class Constants {
     public static float FONT_SIZE_MEDIUM = 24.0f;
     public static float ORB_PROXIMITY_FACTOR = 3.0f;
     public static boolean DRAW_GRID = false;
-    public static boolean LOG = true;
+    public static boolean LOG = false;
 }

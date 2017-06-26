@@ -49,18 +49,22 @@ public class Wave implements Projectile {
     }
 
     @Override
-    public void draw(Canvas canvas, int color) {
+    public void draw(Canvas canvas, int color, boolean show) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
         }
 
-        canvas.save();
+        r += dr;
+
+        if (show == false) {
+            return;
+        }
+
         float translateX = (observer == null) ? cx : observer.position.x;
         float translateY = (observer == null) ? cy : observer.position.y;
+        canvas.save();
         canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
-
-        r += dr;
         paint.setColor(color);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
         canvas.drawArc(rect, (float) Math.toDegrees(orient - sweep / 2), (float) Math.toDegrees(sweep), false, paint);

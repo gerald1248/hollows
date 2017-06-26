@@ -649,8 +649,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             Wave w = it.next();
             if (w.isDone()) {
                 it.remove();
-            } else if (Collision.circleRect((int) w.cx, (int) w.cy, (int) w.r, rectScreen)) {
-                w.draw(canvas, masterColor);
+            } else {
+                //TODO: reinstate Collision.circleRect((int) w.cx, (int) w.cy, (int) w.r, rectScreen));
+                w.draw(canvas, masterColor, true);
             }
         }
 
@@ -659,8 +660,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             Laser l = laserIt.next();
             if (l.isDone()) {
                 laserIt.remove();
-            } else if (Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen)) {
-                l.draw(canvas, masterColor);
+            } else {
+                //TODO: reinstate Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen));
+                l.draw(canvas, masterColor, true);
             }
         }
 
@@ -669,8 +671,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             Laser l = laserIt.next();
             if (l.isDone()) {
                 laserIt.remove();
-            } else if (Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen)) {
-                l.draw(canvas, masterColor);
+            } else {
+                //TODO: reinstate Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen));
+                l.draw(canvas, masterColor, true);
             }
         }
     }

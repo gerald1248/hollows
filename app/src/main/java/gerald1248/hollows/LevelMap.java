@@ -84,6 +84,7 @@ public class LevelMap {
     public void setLevelIndex(int levelIndex) {
         this.levelIndex = levelIndex;
         shapes.clear();
+        towers.clear();
         clearLevelMap();
         offscreenCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }

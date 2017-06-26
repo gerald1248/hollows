@@ -56,29 +56,30 @@ public class Laser implements Projectile {
     }
 
     @Override
-    public void draw(Canvas canvas, int color) {
+    public void draw(Canvas canvas, int color, boolean show) {
         stepsRemaining--;
         if (stepsRemaining <= 0) {
             return;
         }
 
-        canvas.save();
-        float translateX = (observer == null) ? cx : observer.position.x;
-        float translateY = (observer == null) ? cy : observer.position.y;
-
-        canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
-
         //store previous values
         prevX = x;
         prevY = y;
-
-        paint.setColor(color);
 
         midX = x + deltaX/2;
         midY = y + deltaY/2;
         x += deltaX;
         y += deltaY;
 
+        if (show == false) {
+            return;
+        }
+
+        float translateX = (observer == null) ? cx : observer.position.x;
+        float translateY = (observer == null) ? cy : observer.position.y;
+        paint.setColor(color);
+        canvas.save();
+        canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
         canvas.drawCircle(x, y, r, paint);
         canvas.restore();
     }
