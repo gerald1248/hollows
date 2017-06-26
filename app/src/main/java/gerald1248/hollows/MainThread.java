@@ -28,6 +28,7 @@ public class MainThread extends Thread {
         this.surfaceHolder = surfaceHolder;
 
         this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+        this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
         this.panel = panel;
     }
 
@@ -35,6 +36,7 @@ public class MainThread extends Thread {
     public void run() {
         long startTime, timeMillis, waitTime;
         int frameCount = 0;
+        int missed = 0;
         long totalTime = 0;
         long targetTime = 1000 / Constants.MAX_FPS;
 
@@ -65,8 +67,8 @@ public class MainThread extends Thread {
             try {
                 if (waitTime > 0) {
                     sleep(waitTime);
-                } else if (Constants.LOG) {
-                    Log.d(TAG, String.format("run (%d overrun)", waitTime));
+                } else {
+                    missed++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -75,8 +77,12 @@ public class MainThread extends Thread {
             totalTime += System.nanoTime() - startTime;
             frameCount++;
             if (frameCount == Constants.MAX_FPS) {
+                if (Constants.LOG == true) {
+                    Log.d(TAG, String.format("Target time: 1s - actual time: %.2fs - missed target in %d/%d frames (%.2f per cent)", (float) totalTime/1000000000.0f, missed, Constants.MAX_FPS, ((float) missed/(float) Constants.MAX_FPS) * 100.0f));
+                }
                 frameCount = 0;
                 totalTime = 0;
+                missed = 0;
             }
         }
     }

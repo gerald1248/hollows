@@ -14,7 +14,5 @@ public interface Projectile {
 
     boolean isDone();
 
-    void setObserver(Body observer);
-
     void setVelocityFactor(float f);
 }

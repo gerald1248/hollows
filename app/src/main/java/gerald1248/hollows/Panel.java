@@ -50,6 +50,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     private LinkedList<Wave> waves = new LinkedList<Wave>();
     private LinkedList<Laser> lasers = new LinkedList<Laser>();
+
     private LinkedList<Laser> enemyLasers = new LinkedList<Laser>();
 
     private Starfield starfield = new Starfield();
@@ -79,7 +80,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     private PanelState state;
 
-    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException {
+    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException, InstantiationException, IllegalAccessException {
         super(context);
 
         this.context = context;
@@ -93,7 +94,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
 
         //2D scene
-        impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
+        impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, Constants.ITERATIONS);
 
         levelMap = new LevelMap(context, typeface, levelIndex);
         levelMap.initStaticShapes(impulse);
@@ -256,9 +257,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 int idDown = event.getPointerId(pointerIndex);
                 mts = new MultitouchState();
                 mts.x1 = event.getX(pointerIndex);
-                multitouchMap.put(idDown, mts);
+                multitouchMap.put(idDown, mts); //TODO: remove?
                 mts.state = MultitouchState.Motion.Pressed;
                 multitouchMap.put(idDown, mts);
+
+                //System.out.printf("DOWN index=%d ID=%d\n", pointerIndex, idDown);
 
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -294,6 +297,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                         multitouchMap.put(id, mts);
                         break;
                     }
+                    //System.out.printf("MOVE index=%d ID=%d\n", pointerIndex, id);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -304,8 +308,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
-                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
-                    l.setObserver(body);
+
+                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20, body);
                     lasers.add(l);
 
                     if (lasers.size() > Constants.MAX_PROJECTILES) {
@@ -405,8 +409,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
                 float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
                 angle -= (float) Math.PI / 2;
-                Laser l = new Laser(x2, y2, angle, 30);
-                l.setObserver(body);
+                Laser l = new Laser(x2, y2, angle, 30, body);
                 l.setVelocityFactor(0.5f);
                 enemyLasers.add(l);
             }
@@ -443,7 +446,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         while (laserIt.hasNext()) {
             // level map
             Laser l = laserIt.next();
-
             if (l.isDone()) {
                 laserIt.remove();
                 continue;
@@ -460,7 +462,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (qs == null) {
                 //try half interval just in case, and only for player's own lasers
                 //so step (and thus velocity) can be high without loss of precision
-                qs = levelMap.detectShapeCollision((x + l.prevX) / 2, (y + l.prevY) / 2, r);
+                //qs = levelMap.detectShapeCollision((x + l.prevX) / 2, (y + l.prevY) / 2, r);
+                qs = levelMap.detectShapeCollision(l.midX, l.midY, r);
             }
 
             if (qs != null) {
@@ -613,13 +616,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         MainActivity mainActivity = (MainActivity) context;
         int masterColor = mainActivity.getMasterColor();
 
+        if (targetsRemaining > 0) {
+            dangerZone.draw(canvas, body.position.x, body.position.y, masterColor);
+        }
         starfield.draw(canvas, body.position.x, body.position.y, masterColor);
         levelMap.draw(canvas, body.position.x, body.position.y, masterColor);
 
         player.draw(canvas, masterColor);
-        if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, body.position.x, body.position.y, masterColor);
-        }
 
         // display targets remaining
         updateInfo(canvas);

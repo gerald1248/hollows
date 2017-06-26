@@ -25,6 +25,7 @@ public class Wave implements Projectile {
     private int steps, stepsRemaining;
     private float dr = Constants.PLAYER_RADIUS;
     private Body observer = null;
+    private Paint paint;
 
     public Wave(float cx, float cy, float orient, float sweep, int steps) {
         this.cx = cx;
@@ -33,9 +34,11 @@ public class Wave implements Projectile {
         this.sweep = sweep;
         this.steps = steps;
         this.stepsRemaining = steps;
+        paint = new Paint();
+        paint.setStrokeWidth(2.0f);
+        paint.setStyle(Paint.Style.STROKE);
     }
 
-    @Override
     public void setObserver(Body observer) {
         this.observer = observer;
     }
@@ -58,10 +61,7 @@ public class Wave implements Projectile {
         canvas.translate(-translateX + Constants.SCREEN_WIDTH / 2, -translateY + Constants.SCREEN_HEIGHT / 2);
 
         r += dr;
-        Paint paint = new Paint();
-        paint.setStrokeWidth(2.0f);
         paint.setColor(color);
-        paint.setStyle(Paint.Style.STROKE);
         RectF rect = new RectF(cx - r, cy - r, cx + r, cy + r);
         canvas.drawArc(rect, (float) Math.toDegrees(orient - sweep / 2), (float) Math.toDegrees(sweep), false, paint);
         canvas.restore();

@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
 
         try {
             panel = new Panel(this, levelIndex, typeface);
-        } catch (IOException e) {
+        } catch (IOException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 
