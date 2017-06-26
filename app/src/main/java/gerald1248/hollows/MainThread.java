@@ -87,7 +87,7 @@ public class MainThread extends Thread {
             frameCount++;
             if (frameCount == Constants.MAX_FPS) {
                 if (Constants.LOG == true) {
-                    Log.d(TAG, String.format("Target: %d FPS - actual time: %.2fs - %d frames missed target (%.2f %%)", Constants.MAX_FPS, (float) totalTime/1000000000.0f, missed, ((float) missed/(float) Constants.MAX_FPS) * 100.0f));
+                    Log.d(TAG, String.format("Target: %d FPS - actual time: %.2fs - %d frames missed target (%.2f%%)", Constants.MAX_FPS, (float) totalTime/1000000000.0f, missed, ((float) missed/(float) Constants.MAX_FPS) * 100.0f));
                 }
                 frameCount = 0;
                 totalTime = 0;

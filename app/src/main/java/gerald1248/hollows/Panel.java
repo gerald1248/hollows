@@ -462,8 +462,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (qs == null) {
                 //try half interval just in case, and only for player's own lasers
                 //so step (and thus velocity) can be high without loss of precision
-                //qs = levelMap.detectShapeCollision((x + l.prevX) / 2, (y + l.prevY) / 2, r);
-                qs = levelMap.detectShapeCollision(l.midX, l.midY, r);
+                // TODO: is this necessary? disabled for now
+                // qs = levelMap.detectShapeCollision(l.midX, l.midY, r);
             }
 
             if (qs != null) {
