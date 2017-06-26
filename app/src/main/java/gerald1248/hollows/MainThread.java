@@ -39,6 +39,7 @@ public class MainThread extends Thread {
         int missed = 0;
         long totalTime = 0;
         long targetTime = 1000 / Constants.MAX_FPS;
+        long debt = 0;
 
         while (running) {
             startTime = System.nanoTime();
@@ -66,9 +67,17 @@ public class MainThread extends Thread {
 
             try {
                 if (waitTime > 0) {
-                    sleep(waitTime);
-                } else {
+                    //recover lost time if possible
+                    if (waitTime > debt) {
+                        waitTime -= debt;
+                        debt = 0;
+                        sleep(waitTime);
+                    } else {
+                        debt -= waitTime;
+                    }
+                } else if (waitTime < 0) {
                     missed++;
+                    debt += -waitTime;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -78,7 +87,7 @@ public class MainThread extends Thread {
             frameCount++;
             if (frameCount == Constants.MAX_FPS) {
                 if (Constants.LOG == true) {
-                    Log.d(TAG, String.format("Target time: 1s - actual time: %.2fs - missed target in %d/%d frames (%.2f per cent)", (float) totalTime/1000000000.0f, missed, Constants.MAX_FPS, ((float) missed/(float) Constants.MAX_FPS) * 100.0f));
+                    Log.d(TAG, String.format("Target: %d FPS - actual time: %.2fs - %d frames missed target (%.2f %%)", Constants.MAX_FPS, (float) totalTime/1000000000.0f, missed, ((float) missed/(float) Constants.MAX_FPS) * 100.0f));
                 }
                 frameCount = 0;
                 totalTime = 0;
