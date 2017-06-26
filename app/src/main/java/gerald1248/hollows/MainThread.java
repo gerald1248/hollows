@@ -1,6 +1,7 @@
 package gerald1248.hollows;
 
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.view.SurfaceHolder;
 import android.util.Log;
 
@@ -25,6 +26,9 @@ public class MainThread extends Thread {
     public MainThread(SurfaceHolder surfaceHolder, Panel panel) {
         super();
         this.surfaceHolder = surfaceHolder;
+
+        this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+        this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
         this.panel = panel;
     }
 
@@ -32,6 +36,7 @@ public class MainThread extends Thread {
     public void run() {
         long startTime, timeMillis, waitTime;
         int frameCount = 0;
+        int missed = 0;
         long totalTime = 0;
         long targetTime = 1000 / Constants.MAX_FPS;
 
@@ -44,7 +49,6 @@ public class MainThread extends Thread {
                 synchronized (surfaceHolder) {
                     panel.update();
                     panel.draw(canvas);
-                    panel.tick(); //1.0.5
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -63,20 +67,23 @@ public class MainThread extends Thread {
             try {
                 if (waitTime > 0) {
                     sleep(waitTime);
-                } else if (Constants.LOG) {
-                    Log.d(TAG, String.format("run (%d overrun)", waitTime));
+                } else if (waitTime < 0) {
+                    missed++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            totalTime += System.nanoTime() - startTime;
             frameCount++;
+            totalTime += System.nanoTime() - startTime;
             if (frameCount == Constants.MAX_FPS) {
+                if (Constants.LOG == true) {
+                    Log.d(TAG, String.format("Target: %d FPS - scheduled:actual %.2fms:%.2fms - %d frame%s missed target (%.2f%%)", Constants.MAX_FPS, 1000.0f / Constants.MAX_FPS, (float) totalTime / 1000000.0f / Constants.MAX_FPS, missed, (missed == 1) ? "" : "s", ((float) missed / (float) Constants.MAX_FPS) * 100.0f));
+                }
                 frameCount = 0;
                 totalTime = 0;
+                missed = 0;
             }
-            //panel.tick();
         }
     }
 }

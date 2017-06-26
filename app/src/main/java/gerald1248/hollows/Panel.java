@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.magnos.impulse.Body;
 import org.magnos.impulse.Circle;
@@ -52,6 +50,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
     private LinkedList<Wave> waves = new LinkedList<Wave>();
     private LinkedList<Laser> lasers = new LinkedList<Laser>();
+
     private LinkedList<Laser> enemyLasers = new LinkedList<Laser>();
 
     private Starfield starfield = new Starfield();
@@ -73,25 +72,29 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
     private float fontSizeLargeAdjusted = Constants.FONT_SIZE_LARGE;
     private float fontSizeMediumAdjusted = Constants.FONT_SIZE_MEDIUM;
 
+    private Rect rectScreen;
+
     private String bannerText;
     private String alertText;
     private String[] infoLines;
 
     private PanelState state;
 
-    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException {
+    public Panel(Context context, int levelIndex, Typeface typeface) throws IOException, InstantiationException, IllegalAccessException {
         super(context);
 
         this.context = context;
         this.levelIndex = levelIndex;
         this.typeface = typeface;
 
+        rectScreen = new Rect(0, 0, 0, 0);
+
         state = PanelState.Running; //this is the default - pause is the exception
 
         getHolder().addCallback(this);
 
         //2D scene
-        impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, 10);
+        impulse = new ImpulseScene(ImpulseMath.DT * Constants.DT_FACTOR, Constants.ITERATIONS);
 
         levelMap = new LevelMap(context, typeface, levelIndex);
         levelMap.initStaticShapes(impulse);
@@ -164,7 +167,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         lasers.clear();
         enemyLasers.clear();
         levelMap.clearTowers();
-        clearMultitouchState(); //from 1.0.5
+        clearMultitouchState();
         targetsRemaining = initialTargetsRemaining;
 
         if (advance) {
@@ -199,116 +202,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         lasers.clear();
         enemyLasers.clear();
         detonateFramesRemaining = Constants.FRAMES_DETONATE;
-    }
-
-    // tick() is called from main loop when ready to draw frame
-    // determines state of motion events
-    public void tick() {
-        if (state == PanelState.Paused) {
-            return;
-        }
-
-        frames++;
-
-        // potential race condition, so use ConcurrentHashMap
-        for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
-            Integer key = entry.getKey();
-            MultitouchState value = entry.getValue();
-            int ticks = value.ticks;
-            value.ticks = ticks + 1;
-            multitouchMap.put(key, value);
-
-            if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
-                // visual indicator if thrust not already applied
-                if (value.state != MultitouchState.Motion.Thrust) {
-                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 4);
-                    waves.add(w);
-
-                    if (waves.size() > Constants.MAX_PROJECTILES) {
-                        waves.remove();
-                    }
-                }
-
-                // apply thrust
-                value.state = MultitouchState.Motion.Thrust;
-                multitouchMap.put(key, value);
-
-                float orient = body.orient;
-                float mult = 1500000.0F;
-                float c = (float) Math.cos(orient);
-                float s = (float) Math.sin(orient);
-
-                Vec2 v = new Vec2(mult * c, mult * s);
-                body.applyForce(v);
-            }
-        }
-        impulse.step(); // calc new values
-
-        // force fixed orient
-        body.setOrient(player.orient);
-
-        //handle game over
-        if (player.exploded()) {
-            targetsRemaining = initialTargetsRemaining;
-            reset(false);
-        } else if (player.escaped()) {
-            //TODO: advance to next level
-            targetsRemaining = initialTargetsRemaining;
-            reset(true);
-        }
-
-        //TODO: move out of Panel class
-        float x1 = body.position.x;
-        float y1 = body.position.y;
-        if (frames % Constants.TOWER_INTERVAL_FRAMES == 0) {
-            for (QualifiedShape qs : levelMap.getTowers()) {
-                Tower t = (Tower) qs;
-
-                //first check player is within detection field
-                //currently only N and S orientations are used
-                float x2 = t.x;
-                float y2 = t.y;
-                if (t.orient < 0.0f) {
-                    if (y2 < y1) {
-                        continue;
-                    }
-                } else {
-                    if (y2 > y1) {
-                        continue;
-                    }
-                }
-
-                //1.0.5
-                if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
-                    continue;
-                }
-
-                float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
-                angle -= (float) Math.PI / 2;
-                Laser l = new Laser(x2, y2, angle, 30);
-                l.setObserver(body);
-                l.setVelocityFactor(0.5f);
-                enemyLasers.add(l);
-            }
-        }
-
-        //animate orbs to let the user know flying close to them has an effect
-        if (frames % Constants.PULSE_INTERVAL_FRAMES == 0) {
-            for (QualifiedShape qs : levelMap.getShapes()) {
-                if (qs instanceof BaseOrb || qs instanceof TitleOrb || qs instanceof AudioOrb || qs instanceof RedshiftOrb) {
-
-                    float x2 = qs.x;
-                    float y2 = qs.y;
-
-                    if (Math.abs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS) * (Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
-                        Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 8);
-                        w.setObserver(body);
-                        w.setVelocityFactor(0.5f);
-                        waves.add(w);
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -364,9 +257,11 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 int idDown = event.getPointerId(pointerIndex);
                 mts = new MultitouchState();
                 mts.x1 = event.getX(pointerIndex);
-                multitouchMap.put(idDown, mts);
+                multitouchMap.put(idDown, mts); //TODO: remove?
                 mts.state = MultitouchState.Motion.Pressed;
                 multitouchMap.put(idDown, mts);
+
+                //System.out.printf("DOWN index=%d ID=%d\n", pointerIndex, idDown);
 
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -402,6 +297,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                         multitouchMap.put(id, mts);
                         break;
                     }
+                    //System.out.printf("MOVE index=%d ID=%d\n", pointerIndex, id);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -412,8 +308,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
-                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20);
-                    l.setObserver(body);
+
+                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20, body);
                     lasers.add(l);
 
                     if (lasers.size() > Constants.MAX_PROJECTILES) {
@@ -435,6 +331,92 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         if (state == PanelState.Paused) {
             return;
         }
+
+        // first manage touch event state
+        // formerly handled separately in tick()
+        frames++;
+
+        for (Map.Entry<Integer, MultitouchState> entry : multitouchMap.entrySet()) {
+            Integer key = entry.getKey();
+            MultitouchState value = entry.getValue();
+            int ticks = value.ticks;
+            value.ticks = ticks + 1;
+            multitouchMap.put(key, value);
+
+            if ((value.state == MultitouchState.Motion.Pressed || value.state == MultitouchState.Motion.Thrust || value.state == MultitouchState.Motion.Move) && value.ticks > Constants.FRAMES_DELAY) {
+                // visual indicator if thrust not already applied
+                if (value.state != MultitouchState.Motion.Thrust) {
+                    Wave w = new Wave(body.position.x, body.position.y, player.orient - (float) Math.PI, (float) Math.PI / 8, 3);
+                    waves.add(w);
+
+                    if (waves.size() > Constants.MAX_PROJECTILES) {
+                        waves.remove();
+                    }
+                }
+
+                // apply thrust
+                value.state = MultitouchState.Motion.Thrust;
+                multitouchMap.put(key, value);
+
+                float orient = body.orient;
+                float mult = 1500000.0F;
+                float c = (float) Math.cos(orient);
+                float s = (float) Math.sin(orient);
+
+                Vec2 v = new Vec2(mult * c, mult * s);
+                body.applyForce(v);
+            }
+        }
+        impulse.step(); // calc new values
+
+        // force fixed orient
+        body.setOrient(player.orient);
+
+        //handle game over
+        if (player.exploded()) {
+            targetsRemaining = initialTargetsRemaining;
+            reset(false);
+        } else if (player.escaped()) {
+            //TODO: advance to next level
+            targetsRemaining = initialTargetsRemaining;
+            reset(true);
+        }
+
+        float x1 = body.position.x;
+        float y1 = body.position.y;
+        if (frames % Constants.TOWER_INTERVAL_FRAMES == 0) {
+            for (QualifiedShape qs : levelMap.getTowers()) {
+                Tower t = (Tower) qs;
+
+                //first check player is within detection field
+                //currently only N and S orientations are used
+                float x2 = t.x;
+                float y2 = t.y;
+                if (t.orient < 0.0f) {
+                    if (y2 < y1) {
+                        continue;
+                    }
+                } else {
+                    if (y2 > y1) {
+                        continue;
+                    }
+                }
+
+                //1.0.5
+                if (Collision.circleCircle(x1, x2, y1, y2, Constants.TOWER_RANGE) == false) {
+                    continue;
+                }
+
+                float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
+                angle -= (float) Math.PI / 2;
+                Laser l = new Laser(x2, y2, angle, 30, body);
+                l.setVelocityFactor(0.5f);
+                enemyLasers.add(l);
+            }
+        }
+
+        // now deal with collisions etc.
+
         Vec2 v = body.position;
 
         if (v.x < 0.0f || v.x > Constants.MAX_MAP || v.y < 0.0f || v.y > Constants.MAX_MAP) {
@@ -464,7 +446,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         while (laserIt.hasNext()) {
             // level map
             Laser l = laserIt.next();
-
             if (l.isDone()) {
                 laserIt.remove();
                 continue;
@@ -481,13 +462,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (qs == null) {
                 //try half interval just in case, and only for player's own lasers
                 //so step (and thus velocity) can be high without loss of precision
-                qs = levelMap.detectShapeCollision((x + l.prevX) / 2, (y + l.prevY) / 2, r);
+                // TODO: is this necessary? disabled for now
+                // qs = levelMap.detectShapeCollision(l.midX, l.midY, r);
             }
 
             if (qs != null) {
                 laserIt.remove();
 
-                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 10);
+                Wave wave = new Wave(qs.x, qs.y, 0.0f, (float) (2 * Math.PI), 6);
                 wave.setObserver(body);
                 waves.add(wave);
                 detonate();
@@ -533,7 +515,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             //finally check if laser has hit solid matter
             if (levelMap.detectCollision(x, y, r, orient)) {
                 laserIt.remove();
-                Wave wave = new Wave(x, y, orient, 2.0f * (float) Math.PI, 4);
+                Wave wave = new Wave(x, y, orient, 2.0f * (float) Math.PI, 3);
                 wave.setObserver(body);
                 wave.setVelocityFactor(0.5f);
                 waves.add(wave);
@@ -556,6 +538,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             float r = l.r;
             float dFromTower = l.d;
             float orient = l.orient;
+
             //2D bodies - NB: tower laser starts from shape, so set minimum radius
             if (dFromTower > Constants.TILE_LENGTH * 2) {
                 if (levelMap.detectCollision(x, y, r, orient)) {
@@ -580,7 +563,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         if (targetsRemaining > 0) {
             //TODO: move proximity check to specialized Orb class
             //finally, check if near endPoint
-            float x1 = v.x, y1 = v.y, x2 = endPoint.x, y2 = endPoint.y;
+            // x1 and y1 are known
+            float x2 = endPoint.x, y2 = endPoint.y;
 
             if (Collision.circleCircle(x1, y1, x2, y2, Constants.ORB_PROXIMITY_FACTOR * Constants.PLAYER_RADIUS)) {
                 targetsRemaining -= 2;
@@ -599,9 +583,20 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             bannerText = "";
             infoLines = new String[]{};
         } else {
+            //banner display
             bannerText = o.getBannerText();
             infoLines = o.getInfoLines();
+
+            //pulse
+            if (frames % Constants.PULSE_INTERVAL_FRAMES == 0 && (o instanceof BaseOrb || o instanceof TitleOrb || o instanceof AudioOrb || o instanceof RedshiftOrb)) {
+                QualifiedShape qs = (QualifiedShape) o;
+                Wave w = new Wave(qs.x, qs.y, 0.0f, 2.0f * (float) Math.PI, 7);
+                w.setObserver(body);
+                w.setVelocityFactor(0.5f);
+                waves.add(w);
+            }
         }
+
     }
 
     public void draw(Canvas canvas) {
@@ -620,13 +615,14 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         MainActivity mainActivity = (MainActivity) context;
         int masterColor = mainActivity.getMasterColor();
-        starfield.draw(canvas, -body.position.x, -body.position.y, masterColor);
-        levelMap.draw(canvas, -body.position.x, -body.position.y, masterColor);
+
+        if (targetsRemaining > 0) {
+            dangerZone.draw(canvas, body.position.x, body.position.y, masterColor);
+        }
+        starfield.draw(canvas, body.position.x, body.position.y, masterColor);
+        levelMap.draw(canvas, body.position.x, body.position.y, masterColor);
 
         player.draw(canvas, masterColor);
-        if (targetsRemaining > 0) {
-            dangerZone.draw(canvas, -body.position.x, -body.position.y, masterColor);
-        }
 
         // display targets remaining
         updateInfo(canvas);
@@ -641,13 +637,21 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             return;
         }
 
+        int x = (int) body.position.x;
+        int y = (int) body.position.y;
+        int w2 = Constants.SCREEN_WIDTH/2;
+        int h2 = Constants.SCREEN_HEIGHT/2;
+
+        rectScreen.set(x - w2, y - h2, x + w2, y + h2);
+
         Iterator<Wave> it = waves.iterator();
         while (it.hasNext()) {
             Wave w = it.next();
             if (w.isDone()) {
                 it.remove();
             } else {
-                w.draw(canvas, masterColor);
+                //TODO: reinstate Collision.circleRect((int) w.cx, (int) w.cy, (int) w.r, rectScreen));
+                w.draw(canvas, masterColor, true);
             }
         }
 
@@ -657,7 +661,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas, masterColor);
+                //TODO: reinstate Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen));
+                l.draw(canvas, masterColor, true);
             }
         }
 
@@ -667,7 +672,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             if (l.isDone()) {
                 laserIt.remove();
             } else {
-                l.draw(canvas, masterColor);
+                //TODO: reinstate Collision.circleRect((int) l.cx, (int) l.cy, (int) l.r, rectScreen));
+                l.draw(canvas, masterColor, true);
             }
         }
     }

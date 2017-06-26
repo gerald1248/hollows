@@ -10,11 +10,9 @@ import org.magnos.impulse.Body;
  */
 
 public interface Projectile {
-    void draw(Canvas canvas, int color);
+    void draw(Canvas canvas, int color, boolean show);
 
     boolean isDone();
-
-    void setObserver(Body observer);
 
     void setVelocityFactor(float f);
 }

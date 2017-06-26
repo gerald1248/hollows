@@ -16,8 +16,6 @@ import android.view.WindowManager;
 
 import java.io.IOException;
 
-import static gerald1248.hollows.MainThread.canvas;
-
 public class MainActivity extends Activity {
 
     private LoopMediaPlayer loopMediaPlayer = null;
@@ -65,7 +63,7 @@ public class MainActivity extends Activity {
 
         try {
             panel = new Panel(this, levelIndex, typeface);
-        } catch (IOException e) {
+        } catch (IOException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
 

@@ -11,31 +11,39 @@ import android.graphics.Path;
  */
 
 public class HomingDevice implements GameObject {
-    float cx, cy, r;
-    float orient = 0.0f; // 3 o'clock
+    private float cx, cy, r;
+    private float orient = 0.0f; // 3 o'clock
+    private Paint paint;
+    private Path path;
 
     public HomingDevice(float cx, float cy, float r) {
         this.cx = cx;
         this.cy = cy;
         this.r = r;
+
+        paint = new Paint();
+        path = new Path();
     }
 
     @Override
     public void draw(Canvas canvas, int color) {
         canvas.save();
         canvas.rotate((float) Math.toDegrees(orient), cx, cy);
-        Paint paint = new Paint();
+
+        paint.reset();
+
         paint.setColor(Color.GRAY);
         canvas.drawCircle(cx, cy, r, paint);
 
         paint.setColor(color);
-        Path p = new Path();
-        p.moveTo(cx + r, cy);
-        p.lineTo(cx - r, cy + r / 3);
-        p.lineTo(cx - r + r / 3, cy);
-        p.lineTo(cx - r, cy - r / 3);
-        p.close();
-        canvas.drawPath(p, paint);
+
+        path.reset();
+        path.moveTo(cx + r, cy);
+        path.lineTo(cx - r, cy + r / 3);
+        path.lineTo(cx - r + r / 3, cy);
+        path.lineTo(cx - r, cy - r / 3);
+        path.close();
+        canvas.drawPath(path, paint);
 
         canvas.restore();
     }
