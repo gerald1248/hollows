@@ -27,8 +27,9 @@ public class MainThread extends Thread {
         super();
         this.surfaceHolder = surfaceHolder;
 
-        this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
-        this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        //this.surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
+        //this.surfaceHolder.setFixedSize(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+
         this.panel = panel;
     }
 
