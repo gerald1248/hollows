@@ -71,6 +71,8 @@ public class Laser implements Projectile {
         x += deltaX;
         y += deltaY;
 
+        d += (Math.abs(deltaX) + Math.abs(deltaY)) / 2; // approximation - exact distance not req'd
+
         if (show == false) {
             return;
         }

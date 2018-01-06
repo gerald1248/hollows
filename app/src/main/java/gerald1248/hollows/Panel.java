@@ -106,6 +106,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
         adjustFontSizes();
 
+        setGravity(levelIndex);
+
         initPlayer(); //canvas
         initBody(); //impulse
 
@@ -194,8 +196,13 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
         levelMap.initStaticShapes(impulse);
         startPoint = levelMap.getStartPoint();
         endPoint = levelMap.getEndPoint();
+        setGravity(levelIndex);
         initPlayer();
         initBody();
+    }
+
+    public void setGravity(int levelIndex) {
+        impulse.setGravity(10.0f * (float) levelIndex);
     }
 
     public void detonate() {
@@ -257,7 +264,7 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 int idDown = event.getPointerId(pointerIndex);
                 mts = new MultitouchState();
                 mts.x1 = event.getX(pointerIndex);
-                multitouchMap.put(idDown, mts); //TODO: remove?
+                multitouchMap.put(idDown, mts);
                 mts.state = MultitouchState.Motion.Pressed;
                 multitouchMap.put(idDown, mts);
 
@@ -309,7 +316,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 if (mts.state == MultitouchState.Motion.Pressed) {
 
-                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 20, body);
+                    Laser l = new Laser(body.position.x, body.position.y, player.orient, 30, body);
+                    l.setVelocityFactor(0.75f);
                     lasers.add(l);
 
                     if (lasers.size() > Constants.MAX_PROJECTILES) {
@@ -409,8 +417,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
                 float angle = (float) Math.atan2(x1 - x2, -(y1 - y2));
                 angle -= (float) Math.PI / 2;
-                Laser l = new Laser(x2, y2, angle, 30, body);
-                l.setVelocityFactor(0.5f);
+                Laser l = new Laser(x2, y2, angle, 60, body);
+                l.setVelocityFactor(0.35f);
                 enemyLasers.add(l);
             }
         }
@@ -458,13 +466,6 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
 
             //important: need to check for 2D collisions first
             QualifiedShape qs = levelMap.detectShapeCollision(x, y, r);
-
-            if (qs == null) {
-                //try half interval just in case, and only for player's own lasers
-                //so step (and thus velocity) can be high without loss of precision
-                // TODO: is this necessary? disabled for now
-                // qs = levelMap.detectShapeCollision(l.midX, l.midY, r);
-            }
 
             if (qs != null) {
                 laserIt.remove();
@@ -540,8 +541,9 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             float orient = l.orient;
 
             //2D bodies - NB: tower laser starts from shape, so set minimum radius
-            if (dFromTower > Constants.TILE_LENGTH * 2) {
-                if (levelMap.detectCollision(x, y, r, orient)) {
+            if (dFromTower > Constants.TILE_LENGTH) {
+                // ensure collisions are detected, hence *= 4.0f
+                if (levelMap.detectCollision(x, y, r * 4.0f, orient)) {
                     laserIt.remove();
                     continue;
                 }
@@ -575,8 +577,8 @@ public class Panel extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        //add 0.5r tolerance to avoid flicker
-        Orb o = (Orb) levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 1.5f);
+        //add tolerance to avoid flicker
+        Orb o = (Orb) levelMap.detectShapeCollision(v.x, v.y, Constants.PLAYER_RADIUS * 2.5f);
         if (state == PanelState.Paused) {
             // do nothing; bannerText has been set
         } else if (o == null && state != PanelState.Paused) {

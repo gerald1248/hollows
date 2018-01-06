@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">Hollows</string>
-    <string name="info_line1">Move left/right.....rotate</string>
-    <string name="info_line2">Long press..........thrust</string>
-    <string name="info_line3">Short press...........fire</string>
+    <string name="info_line1">Move left/right....rotate</string>
+    <string name="info_line2">Long press.........thrust</string>
+    <string name="info_line3">Short press..........fire</string>
+    <string name="info_line4">Use two hands if possible</string>
     <string name="audio_label">Audio</string>
     <string name="audio_banner">Toggle audio</string>
     <string name="audio_on">Audio on</string>
