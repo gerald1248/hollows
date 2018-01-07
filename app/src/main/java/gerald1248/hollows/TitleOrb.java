@@ -11,6 +11,7 @@ import static gerald1248.hollows.R.string.app_name;
 import static gerald1248.hollows.R.string.info_line1;
 import static gerald1248.hollows.R.string.info_line2;
 import static gerald1248.hollows.R.string.info_line3;
+import static gerald1248.hollows.R.string.info_line4;
 
 /**
  * basic information about the game
@@ -46,7 +47,8 @@ public class TitleOrb extends QualifiedShape implements Orb {
         return new String[]{
                 r.getString(info_line1),
                 r.getString(info_line2),
-                r.getString(info_line3)
+                r.getString(info_line3),
+                r.getString(info_line4)
         };
     }
 }
